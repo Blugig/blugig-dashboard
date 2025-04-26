@@ -34,7 +34,7 @@ export default function AddAdminUsers() {
                 is_super_admin: isSuperAdmin
             });
 
-            if (res.status === 'success') {
+            if (res.success) {
                 toast("User Added Successfully");
                 setEmail("");
                 setSelectedPermissions({});

@@ -61,8 +61,8 @@ export default async function Dashboard() {
       <div className="grid gap-4 grid-cols-2 mt-4">
         <Card className="border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium text-gray-400">
-              Total Revenue
+            <CardTitle className="text-lg font-medium">
+              Total Forms
             </CardTitle>
 
             <Select>
@@ -77,14 +77,11 @@ export default async function Dashboard() {
 
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold mb-6">$980,273.00</div>
-
             <BarGraph
               labels={[
                 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
               ]}
-              yLabelVisible={false}
             />
           </CardContent>
         </Card>
@@ -92,7 +89,7 @@ export default async function Dashboard() {
         <Card className="border-2 flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mb-auto">
             <CardTitle className="text-lg font-medium">
-              Total Refunds
+              Total Conversations
             </CardTitle>
 
             <Select>
