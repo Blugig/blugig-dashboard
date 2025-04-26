@@ -76,7 +76,7 @@ export const SolutionImplementationColumns = [
         id: "action",
         header: "Action",
         cell: ({ row }) => (
-            <Link href={`/forms/details/${row.original.id}-SOL`} className="text-blue-500">View</Link>
+            <Link href={`/forms/details/${row.original.form_submission_id}-SOL`} className="text-blue-500">View</Link>
         ),
     }
 ];
@@ -102,7 +102,7 @@ export const PremiumAppSupportColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-PRM`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-PRM`} className="text-blue-500">View</Link>,
     }
 ]
 export const ApiIntegrationColumns = [
@@ -120,7 +120,7 @@ export const ApiIntegrationColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-API`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-API`} className="text-blue-500">View</Link>,
     }
 ];
 
@@ -139,7 +139,7 @@ export const HireSmartsheetExpertColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-EXP`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-EXP`} className="text-blue-500">View</Link>,
     }
 ];
 
@@ -159,7 +159,7 @@ export const SystemAdminSupportColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-ADM`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-ADM`} className="text-blue-500">View</Link>,
     }
 ];
 
@@ -190,7 +190,7 @@ export const ReportsDashboardColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-REP`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-REP`} className="text-blue-500">View</Link>,
     }
 ];
 
@@ -212,7 +212,7 @@ export const BookOneOnOneColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-ONE`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-ONE`} className="text-blue-500">View</Link>,
     }
 ];
 
@@ -233,7 +233,7 @@ export const PmoControlCenterColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-PMO`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-PMO`} className="text-blue-500">View</Link>,
     }
 ];
 
@@ -252,6 +252,6 @@ export const LicenseRequestColumns = [
     {
         id: "action",
         header: "Action",
-        cell: ({ row }) => <Link href={`/forms/details/${row.original.id}-LIR`} className="text-blue-500">View</Link>,
+        cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-LIR`} className="text-blue-500">View</Link>,
     }
 ];

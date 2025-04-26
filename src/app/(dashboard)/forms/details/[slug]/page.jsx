@@ -44,6 +44,7 @@ export default function FormDetails({ params }) {
 
         if (res) {
             setData(res);
+            console.log(res);
 
             const { id, form_submission_id, ...remainingDetails } = res?.details || {};
             setDetails(remainingDetails);
