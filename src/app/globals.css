@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.custom-scrollbar::-webkit-scrollbar { 
+  display: none !important;
+}
+
+.custom_no_display_table > div {
+  display: block !important;
+}
