@@ -1,18 +1,23 @@
-// "use client";
+"use client";
 
 import { Poppins } from "next/font/google";
 import "../globals.css";
 import SideBar from "@/components/layout/SideBar";
 import { SidebarProvider } from "@/lib/sidebar";
+import useProfileStore from "@/store/session.store";
+import { useEffect } from "react";
 
-const poppins = Poppins({
-  weight: ['200', '300', '400', '500', '600', '700'],
-  style: ['normal'],
-  subsets: ['latin'],
-  display: 'swap'
-});
 
 export default function RootLayout({ children }) {
+
+  const { profile, refreshProfile } = useProfileStore();
+
+  useEffect(() => {
+    (async () => {
+      if (profile) return;
+      await refreshProfile();
+    })();
+  }, [])
 
   return (
     <main className="flex h-screen overflow-hidden">

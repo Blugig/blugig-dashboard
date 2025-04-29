@@ -19,6 +19,7 @@ import { Eye, EyeOff, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { login } from "@/lib/auth";
 import { toast } from "sonner";
+import useProfileStore from "@/store/session.store";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -28,6 +29,7 @@ const formSchema = z.object({
 export default function Login() {
 
     const router = useRouter();
+    const { refreshProfile } = useProfileStore()
 
     const [loading, setLoading] = useState(false)
     const [visible, setVisible] = useState(false)
@@ -52,6 +54,7 @@ export default function Login() {
 
         if (res) {
             setLoading(true)
+            await refreshProfile()
             router.replace('/')
         } else {
             toast("Login Error", {

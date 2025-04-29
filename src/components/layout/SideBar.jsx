@@ -20,12 +20,14 @@ import { BarChart } from "lucide-react";
 import { ShieldCheck } from "lucide-react";
 import { Star } from "lucide-react";
 import { CalendarCheck } from "lucide-react";
+import useProfileStore from "@/store/session.store";
 
 export default function SideBar() {
 
     const pathname = usePathname()
-    const sidebar = useSidebar()
     const [permissions, setPermissions] = useState([])
+
+    const { profile } = useProfileStore();
 
     useEffect(() => {
         async function defineSidebarRoutes() {
@@ -80,7 +82,7 @@ export default function SideBar() {
                         <AvatarImage src="https://github.com/shadcn.png" />
                         <AvatarFallback>DL</AvatarFallback>
                     </Avatar>
-                    <span className="ml-2 font-semibold">Blugig Admin</span>
+                    <span className="ml-2 font-semibold">{profile?.name}</span>
                 </div>
                 <ScrollArea className="w-full flex-1" orientation="vertical">
                     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">

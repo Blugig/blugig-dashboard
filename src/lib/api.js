@@ -30,8 +30,11 @@ export async function fetchFromAPI(url) {
     }
 }
 
-export async function postDataToAPI(url, data) {
+export async function postDataToAPI(url, data, sendingFile = false) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${cookies().get("session").value}`
+    if (sendingFile) {
+        axios.defaults.headers.common["Content-Type"] = "multipart/form-data"
+    }
     try {
         const response = await axios.post(url, data);
         return response.data.data;
