@@ -57,7 +57,68 @@ export const UserDetailsColumns = [
         header: "Action",
         cell: ({ row }) => <Link href={`users/${row.getValue('id')}/`} className="text-blue-500">View</Link>,
     },
-]
+];
+
+export const UserSubmissionsColumns = [
+    {
+        accessorKey: "created_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Submission Date
+                    <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => <div>{formatDate(row.getValue("created_at"))}</div>,
+    },
+    {
+        accessorKey: "form_id",
+        header: "Form ID",
+        cell: ({ row }) => <div className="text-blue-500">{row.getValue("form_id")}</div>,
+    },
+    {
+        accessorKey: "form_type",
+        header: "Form Type",
+        cell: ({ row }) => <Badge>{row.getValue("form_type")}</Badge>,
+    },
+    {
+        accessorKey: "form_name",
+        header: "Form Name",
+        cell: ({ row }) => <div>{row.getValue("form_name")}</div>,
+    },
+    {
+        accessorKey: "form_title",
+        header: "Title",
+        cell: ({ row }) => <div>{row.getValue("form_title") || "-"}</div>,
+    },
+    {
+        accessorKey: "form_description",
+        header: "Description",
+        cell: ({ row }) => <div>{row.getValue("form_description") || "-"}</div>,
+    },
+    {
+        accessorKey: "conversation_uuid",
+        header: "Conversation Exists",
+        cell: ({ row }) => <div>{row.getValue("conversation_uuid") ? "Yes" : "No"}</div>,
+    },
+    {
+        id: "action",
+        enableHiding: false,
+        header: "Action",
+        cell: ({ row }) => (
+            <Link 
+                href={`/forms/details/${row.getValue("form_id")}-${row.getValue("form_type")}`} 
+                className="text-blue-500"
+            >
+                View
+            </Link>
+        ),
+    },
+];
 
 export const SolutionImplementationColumns = [
     {
@@ -105,6 +166,7 @@ export const PremiumAppSupportColumns = [
         cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-PRM`} className="text-blue-500">View</Link>,
     }
 ]
+
 export const ApiIntegrationColumns = [
     {
         accessorKey: "user",

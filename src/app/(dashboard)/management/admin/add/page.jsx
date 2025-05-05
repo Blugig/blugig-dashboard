@@ -6,10 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { postDataToAPI } from "@/lib/api";
 import { PERMISSIONS } from "@/lib/constant";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function AddAdminUsers() {
+
+    const router = useRouter();
+
     const [email, setEmail] = useState("");
     const [selectedPermissions, setSelectedPermissions] = useState({});
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -34,14 +38,12 @@ export default function AddAdminUsers() {
                 is_super_admin: isSuperAdmin
             });
 
-            if (res.success) {
-                toast("User Added Successfully");
-                setEmail("");
-                setSelectedPermissions({});
-                setIsSuperAdmin(false);
+            if (res?.id) {
+                toast("A mail has been sent to the user with credentials.");
+                router.back();
             } else {
                 toast("Error", {
-                    description: res.message || "Failed to add user.",
+                    description: res?.message || "Failed to add user.",
                 });
             }
         } else {
@@ -56,7 +58,7 @@ export default function AddAdminUsers() {
             <div className="w-full flex items-center justify-between space-x-4 mb-8">
                 <Input
                     type="email"
-                    placeholder="user@piikeup.com"
+                    placeholder="user@blugig.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />

@@ -31,8 +31,8 @@ export async function login(formData) {
         }
         return res.data.success;
     } catch (error) {
-        console.log(error)
-        return false
+        console.log(error.data)
+        return false;
     }
 }
 

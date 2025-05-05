@@ -134,12 +134,12 @@ export default function Messenger({ conversationId, messages, setMessages }) {
                                         <img 
                                             src={message.media_url} 
                                             alt="Shared image"
-                                            className="max-w-[300px] rounded-lg"
+                                            className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] rounded-lg"
                                         />
                                     ) : message.media_type.startsWith('video/') ? (
                                         <video 
                                             controls
-                                            className="max-w-[300px] rounded-lg"
+                                            className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] rounded-lg"
                                         >
                                             <source src={message.media_url} type={message.media_type} />
                                             Your browser does not support the video tag.

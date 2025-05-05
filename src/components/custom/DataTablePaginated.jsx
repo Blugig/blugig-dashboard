@@ -29,10 +29,11 @@ import { PackageOpen } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 
 import { fetchFromAPI } from "@/lib/api";
+import { exportData } from "@/lib/exportData";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
-function DataTablePaginated({ columns, dataUrl, filters = {} }) {
+function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = null }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -73,6 +74,19 @@ function DataTablePaginated({ columns, dataUrl, filters = {} }) {
 
         getData();
     }, [page, filters]);
+
+    const handleExport = async () => {
+        if (!filters.export_as) return;
+
+        await exportData(data, filters.export_as, "exported_data");
+    };
+
+    useEffect(() => {
+        if (filters.export_as) {
+            handleExport();
+            setExportFormat(null);
+        }
+    }, [filters.export_as]);
 
     const handlePreviousPage = () => {
         if (previousPage) {

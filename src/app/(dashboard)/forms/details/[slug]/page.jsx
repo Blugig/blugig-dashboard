@@ -68,12 +68,11 @@ export default function FormDetails({ params }) {
             {/* Form Details */}
             <Card className="mb-4">
                 <CardHeader>
-                    <CardTitle className="flex">{getPermName(formType)} #{data?.details?.form_submission_id}</CardTitle>
+                    <CardTitle className="flex flex-wrap">{getPermName(formType)} #{data?.details?.form_submission_id}</CardTitle>
                     <CardDescription>Forms details which the user filled and converstaion</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-3 gap-6">
-
-                    <Link href={'/dashboard/users/' + data?.user?.id}>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    <Link href={'/dashboard/users/' + data?.user?.id} className="block">
                         <Info
                             title={"User"}
                             value={data?.user?.name}
@@ -95,7 +94,7 @@ export default function FormDetails({ params }) {
                     })}
                 </CardContent>
                 {!conversationId && (
-                    <CardFooter>
+                    <CardFooter className="flex justify-center sm:justify-start">
                         <Button onClick={startConversation}>Start a Conversation</Button>
                     </CardFooter>
                 )}

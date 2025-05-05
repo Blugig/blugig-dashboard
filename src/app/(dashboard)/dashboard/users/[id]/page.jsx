@@ -14,23 +14,25 @@ import {
 import Pagelayout from "@/components/layout/PageLayout";
 import { useEffect, useMemo, useState } from "react";
 import { fetchFromAPI, postDataToAPI } from "@/lib/api";
-import { OrderDetailsColumns } from "@/lib/tableCols";
+import { UserSubmissionsColumns } from "@/lib/tableCols";
 import { formatDate } from "@/lib/utils";
-import TabScreen from "@/components/custom/TabsScreen";
 import UpdateStatus from "@/components/custom/status/UpdateStatus";
 import { toast } from "sonner";
 
 export default function UserDetails({ params }) {
+
     const [status, setStatus] = useState()
     const [user, setuser] = useState({})
+    const [submissions, setSubmissions] = useState([])
 
     async function fetchUser() {
         const res = await fetchFromAPI(`get-user-details/${params.id}`)
 
         console.log(res);
 
-        setuser(res);
-        setStatus(res?.is_active ? "active" : "inactive")
+        setuser(res?.user);
+        setSubmissions(res?.submissions)
+        setStatus(res?.user?.is_active ? "active" : "inactive")
     }
 
     useEffect(() => {
@@ -56,7 +58,7 @@ export default function UserDetails({ params }) {
                     <CardTitle className="flex">{user?.name}</CardTitle>
                     <CardDescription>Account details for the user and related orders</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-3 gap-6">
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <Info title={"Name"} value={user?.name} />
                     <Info title={"Email"} value={user?.email || '-'} />
                     <Info title={"Phone Number"} value={user?.phone} />
@@ -66,7 +68,7 @@ export default function UserDetails({ params }) {
                     <Info title={"Company Name"} value={user?.company_name || '-'} />
                     <Info title={"Account Status"} value={user?.is_active ? "Active" : "Inactive"} />
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex-wrap">
                     <UpdateStatus
                         label="Account"
                         value={status}
@@ -78,6 +80,9 @@ export default function UserDetails({ params }) {
                     />
                 </CardFooter>
             </Card>
+
+            <CardTitle className="mt-4">Form submissions by user</CardTitle>
+            <DataTable columns={UserSubmissionsColumns} data={submissions} />
         </Pagelayout>
     )
 }

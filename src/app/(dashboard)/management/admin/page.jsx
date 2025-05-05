@@ -146,16 +146,35 @@ function AllAdminUsersContent() {
 
     return (
         <Pagelayout title={"Admin User Permissions"}>
-            <div className="w-full flex items-center justify-between space-x-4 mb-8">
-                <Input type="email" placeholder="user@example.com" value={email} onChange={e => setEmail(e.target.value)} />
-                <Button onClick={getAdminUser}>See Permissions</Button>
-                <Button variant="destructive" onClick={deleteUser}>
-                    Remove User
-                </Button>
-                <span className="text-sm text-gray-400">OR</span>
-                <Link href={"admin/add/"}>
-                    <Button>Add Admin User</Button>
-                </Link>
+            <div className="w-full flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8">
+                <div className="flex-1">
+                    <Input 
+                        type="email" 
+                        placeholder="user@example.com" 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)}
+                        className="w-full" 
+                    />
+                </div>
+                <div className="flex flex-wrap gap-4">
+                    <Button 
+                        onClick={getAdminUser}
+                        className="flex-1 md:flex-none"
+                    >
+                        See Permissions
+                    </Button>
+                    <Button 
+                        variant="destructive" 
+                        onClick={deleteUser}
+                        className="flex-1 md:flex-none"
+                    >
+                        Remove User
+                    </Button>
+                    <span className="hidden md:inline text-sm text-gray-400">OR</span>
+                    <Link href={"admin/add/"} className="flex-1 md:flex-none">
+                        <Button className="w-full">Add Admin User</Button>
+                    </Link>
+                </div>
             </div>
 
             {adminUser && codes.length > 0 ? (
@@ -187,7 +206,7 @@ function AllAdminUsersContent() {
                             />
                         ))}
 
-                        <Button className="mt-4 w-1/4" type="button" onClick={onSubmit}>
+                        <Button className="mt-4 w-full md:w-1/4" type="button" onClick={onSubmit}>
                             Update Permissions
                         </Button>
                     </form>

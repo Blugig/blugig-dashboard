@@ -40,6 +40,6 @@ export async function postDataToAPI(url, data, sendingFile = false) {
         return response.data.data;
     } catch (error) {
         console.error("API call error:", error.response.data);
-        return { success: false };
+        return { success: false, message: error.response.data?.message };
     }
 }
