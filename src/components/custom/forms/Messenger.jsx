@@ -61,7 +61,7 @@ export default function Messenger({ uid, conversationId, messages, setMessages }
         socketRef.current.emit("send_message", message);
 
         // Add the sent message to the local state
-        message.time = new Date().toLocaleTimeString();
+        message.time = new Date();
         message.sender_admin_id = true;
         message.id = Date.now();
         setMessages((prev) => [...prev, message])
@@ -127,7 +127,7 @@ export default function Messenger({ uid, conversationId, messages, setMessages }
         socketRef.current.emit("send_message", message);
 
         // Add the sent message to the local state
-        message.time = new Date().toLocaleTimeString();
+        message.time = new Date();
         message.sender_admin_id = true;
         message.id = Date.now();
         message.offer = offer;
