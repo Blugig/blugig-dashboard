@@ -16,8 +16,10 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useProfileStore from "@/store/session.store";
 import { postDataToAPI } from "@/lib/api";
+import { Newspaper } from "lucide-react";
+import { CreateOffer } from "./CreateOffer";
 
-export default function Messenger({ conversationId, messages, setMessages }) {
+export default function Messenger({ uid, conversationId, messages, setMessages }) {
 
     const { profile, refreshProfile } = useProfileStore();
 
@@ -81,7 +83,7 @@ export default function Messenger({ conversationId, messages, setMessages }) {
 
         try {
             const res = await postDataToAPI("/file-upload", formData, true);
-            
+
             if (!res) {
                 alert("something went wrong")
             }
@@ -112,6 +114,26 @@ export default function Messenger({ conversationId, messages, setMessages }) {
         }
     };
 
+    const handleSendOffer = async (offer) => {
+        const message = {
+            conversation_id: conversationId,
+            sender_id: profile?.id,
+            sender_role: "admin",
+            body: null,
+            offer_id: offer.id,
+            message_type: "OFFER"
+        };
+
+        socketRef.current.emit("send_message", message);
+
+        // Add the sent message to the local state
+        message.time = new Date().toLocaleTimeString();
+        message.sender_admin_id = true;
+        message.id = Date.now();
+        message.offer = offer;
+        setMessages((prev) => [...prev, message])
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -120,8 +142,7 @@ export default function Messenger({ conversationId, messages, setMessages }) {
             </CardHeader>
             <CardContent>
                 <ChatMessageList
-                    autoScrollEnabled
-                    className="w-full h-[350px]"
+                    className="w-full h-full max-h-[400px] overflow-y-auto"
                 >
                     {messages.map(message => (
                         <ChatBubble
@@ -129,23 +150,43 @@ export default function Messenger({ conversationId, messages, setMessages }) {
                             variant={message?.sender_admin_id ? "sent" : "received"}
                         >
                             <ChatBubbleMessage variant={message?.sender_admin_id ? "sent" : "received"}>
-                                {message.media_url ? (
-                                    message.media_type.startsWith('image/') ? (
-                                        <img 
-                                            src={message.media_url} 
-                                            alt="Shared image"
-                                            className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] rounded-lg"
+                                {message.message_type === "MEDIA" && (
+                                    <>
+                                        {message.media_type.startsWith('image/') ? (
+                                            <img
+                                                src={message.media_url}
+                                                alt="Shared image"
+                                                className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] rounded-lg"
+                                            />
+                                        ) : message.media_type.startsWith('video/') ? (
+                                            <video
+                                                controls
+                                                className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] rounded-lg"
+                                            >
+                                                <source src={message.media_url} type={message.media_type} />
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        ) : null}
+                                        {message.body && <p className="mt-2">{message.body}</p>}
+                                    </>
+                                )}
+                                {message.message_type === "TEXT" && message.body}
+                                {message.message_type === "OFFER" && message.offer && (
+                                    <div className="bg-white text-black p-4 rounded-lg">
+                                        <h3 className="font-semibold text-lg">{message.offer.name}</h3>
+                                        <p className="text-sm text-muted-foreground">{message.offer.description}</p>
+                                        <div className="my-2 space-y-1">
+                                            <p><span className="font-bold">Timeline:</span> {message.offer.timeline}</p>
+                                            <p><span className="font-bold">Budget:</span> ${message.offer.budget}</p>
+                                            <p><span className="font-bold">Status:</span> {message.offer.status}</p>
+                                        </div>
+                                        <CreateOffer 
+                                            uid={uid}
+                                            sendOfferMessage={handleSendOffer}
+                                            offer={message.offer}
                                         />
-                                    ) : message.media_type.startsWith('video/') ? (
-                                        <video 
-                                            controls
-                                            className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] rounded-lg"
-                                        >
-                                            <source src={message.media_url} type={message.media_type} />
-                                            Your browser does not support the video tag.
-                                        </video>
-                                    ) : null
-                                ) : message.body}
+                                    </div>
+                                )}
                             </ChatBubbleMessage>
                             <ChatBubbleTimestamp timestamp={new Date(message.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} />
                         </ChatBubble>
@@ -165,6 +206,11 @@ export default function Messenger({ conversationId, messages, setMessages }) {
                     className="min-h-12 resize-none rounded-lg bg-background border-2 p-3 shadow-none focus-visible:ring-0"
                 />
                 <div className="w-full flex items-center justify-between p-3 pt-2">
+                    <CreateOffer 
+                        uid={uid}
+                        sendOfferMessage={handleSendOffer}
+                    />
+
                     <label htmlFor="file-upload" className="cursor-pointer">
                         <input
                             id="file-upload"
@@ -173,7 +219,7 @@ export default function Messenger({ conversationId, messages, setMessages }) {
                             onChange={handleFileUpload}
                             className="hidden"
                         />
-                        <Button variant="ghost" size="icon" asChild>
+                        <Button variant="outline" size="icon" asChild>
                             <div>
                                 <Paperclip className="size-4" />
                                 <span className="sr-only">Attach file</span>

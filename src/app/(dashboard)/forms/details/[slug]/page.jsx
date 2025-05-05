@@ -102,6 +102,7 @@ export default function FormDetails({ params }) {
 
             {conversationId && (
                 <Messenger
+                    uid={data?.user?.id}
                     conversationId={conversationId}
                     messages={messages}
                     setMessages={setMessages}
