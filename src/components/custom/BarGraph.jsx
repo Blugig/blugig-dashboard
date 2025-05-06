@@ -20,43 +20,45 @@ ChartJS.register(
     Legend
 );
 
-
-export default function BarGraph({ labels, yLabelVisible=true }) {
-
+export default function BarGraph({ labels, acceptedData, rejectedData, pendingData, yLabelVisible = true }) {
     const options = {
+        indexAxis: 'y', // ✅ Switch to horizontal bars
         responsive: true,
         plugins: {
-            title: {
-                display: false,
-            },
-            legend: {
-                display: false, // Hide the legend
-            },
+            title: { display: false },
+            legend: { display: true },
         },
         scales: {
-            y: {
-                ticks: {
-                    display: yLabelVisible, // Hide Y-axis labels
-                },
-                grid: {
-                    display: true, // Hide Y-axis grid lines
-                },
-            },
             x: {
-                grid: {
-                    display: false, // Hide X-axis grid lines
-                },
+                stacked: true, // ✅ Horizontal stacking
+                grid: { display: true },
+            },
+            y: {
+                stacked: true,
+                ticks: { display: yLabelVisible },
+                grid: { display: false },
             },
         },
     };
+
 
     const data = {
         labels,
         datasets: [
             {
-                label: 'Dataset',
-                data: labels.map(() => Math.floor(Math.random() * 1001)), // Generating random number between 0 and 1000
+                label: 'Accepted',
+                data: acceptedData,
                 backgroundColor: '#48ABB8',
+            },
+            {
+                label: 'Rejected',
+                data: rejectedData,
+                backgroundColor: '#F87171',
+            },
+            {
+                label: 'Pending',
+                data: pendingData,
+                backgroundColor: '#FBBF24',
             },
         ],
     };
