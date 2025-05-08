@@ -29,13 +29,16 @@ import {
 } from "@/components/ui/form"
 import { Newspaper } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
-import { postDataToAPI, putDataToAPI } from "@/lib/api"
+import { postDataToAPI } from "@/lib/api"
 import { toast } from "sonner"
 import { useState } from "react"
 
 const formSchema = z.object({
     name: z.string().min(2, {
         message: "Name must be at least 2 characters.",
+    }),
+    type: z.string({
+        required_error: "Please select a type.",
     }),
     description: z.string().min(10, {
         message: "Description must be at least 10 characters.",
@@ -58,6 +61,7 @@ export function CreateOffer({ uid, sendOfferMessage, offer = null }) {
             description: offer?.description || "",
             timeline: offer?.timeline || "",
             budget: offer?.budget || 0,
+            type: offer?.type || "general",
         },
     })
 
@@ -69,6 +73,7 @@ export function CreateOffer({ uid, sendOfferMessage, offer = null }) {
             description: values.description,
             timeline: values.timeline,
             budget: values.budget,
+            type: values.type,
             user_id: uid,
             ...(offer && { offerId: offer.id })
         };
@@ -112,6 +117,27 @@ export function CreateOffer({ uid, sendOfferMessage, offer = null }) {
                                     <FormControl>
                                         <Input placeholder="Offer name" {...field} />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="type"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Offer Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Offer Type" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="general">General</SelectItem>
+                                            <SelectItem value="meeting">Meeting</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}

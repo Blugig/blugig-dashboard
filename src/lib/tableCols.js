@@ -5,6 +5,24 @@ import { Badge } from "@/components/ui/badge"
 import { cn, formatDate } from "./utils"
 
 
+const renderAttachment = ({ row }) => {
+    const attachment = row.getValue("attachment");
+    const attachmentType = row.original?.attachmentType;
+    console.log(attachmentType, row);
+
+    if (!attachment) return <div>-</div>;
+
+    return (
+        <Link href={attachment} target="_blank">
+            {attachmentType?.startsWith('image/')? (
+                <img src={attachment} width={200} height={200} alt="Attachment" />
+            ) : (
+                <span className="text-blue-500">View</span>
+            )}
+        </Link>
+    )
+}
+
 export const UserDetailsColumns = [
     {
         accessorKey: "id",
@@ -133,6 +151,7 @@ export const SolutionImplementationColumns = [
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "contact_preference", header: "Contact Preference" },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
@@ -160,6 +179,7 @@ export const PremiumAppSupportColumns = [
     },
     { accessorKey: "instruction", header: "Instructions" },
     { accessorKey: "contact_preference", header: "Contact Preference" },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
@@ -179,6 +199,7 @@ export const ApiIntegrationColumns = [
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "instructions", header: "Instructions" },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
@@ -198,6 +219,7 @@ export const HireSmartsheetExpertColumns = [
     { accessorKey: "expected_duration", header: "Duration" },
     { accessorKey: "domain_focus", header: "Domain" },
     { accessorKey: "start_date", header: "Start Date", cell: ({ row }) => formatDate(row.getValue("start_date")) },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
@@ -218,6 +240,7 @@ export const SystemAdminSupportColumns = [
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "support_needs", header: "Support Needs" },
     { accessorKey: "contact_preference", header: "Contact" },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
@@ -233,19 +256,7 @@ export const ReportsDashboardColumns = [
     },
     { accessorKey: "request_type", header: "Request Type" },
     { accessorKey: "requirements", header: "Requirements" },
-    {
-        accessorKey: "attachment",
-        header: "Attachment",
-        cell: ({ row }) => (
-            <>
-                {row.getValue("attachment") ? (
-                    <Link href={row.getValue("attachment")} target="_blank">
-                        <img src={row.getValue("attachment")} width={200} height={200} />
-                    </Link>
-                ) : (<div>-</div>)}
-            </>
-        ),
-    },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "instructions", header: "Instructions" },
     { accessorKey: "contact_preference", header: "Contact Preference" },
@@ -271,6 +282,7 @@ export const BookOneOnOneColumns = [
     { accessorKey: "business_email", header: "Email" },
     { accessorKey: "phone_number", header: "Phone" },
     { accessorKey: "agenda", header: "Agenda" },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
@@ -287,11 +299,25 @@ export const PmoControlCenterColumns = [
     { accessorKey: "service_type", header: "Service Type" },
     { accessorKey: "industry", header: "Industry" },
     { accessorKey: "project_details", header: "Details" },
-    { accessorKey: "expected_projects", header: "Expected Projects" },
+{
+    accessorKey: "expected_projects",
+    header: ({ column }) => {
+        return (
+            <Button
+                variant="ghost"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+                Expected Projects
+                <ArrowDownUp className="ml-2 h-4 w-4" />
+            </Button>
+        )
+    },
+},
     { accessorKey: "smartsheet_admin_access", header: "Admin Access" },
     { accessorKey: "current_setup", header: "Setup Status", cell: ({ row }) => <Badge>{row.getValue("current_setup") ? "Yes" : "No"}</Badge> },
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "contact_preference", header: "Contact" },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
@@ -311,6 +337,7 @@ export const LicenseRequestColumns = [
     { accessorKey: "premium_add_ons", header: "Premium Add-ons" },
     { accessorKey: "instructions", header: "Instructions" },
     { accessorKey: "number_of_licenses", header: "Qty" },
+    { accessorKey: "attachment", header: "Attachment", cell: renderAttachment, },
     {
         id: "action",
         header: "Action",
