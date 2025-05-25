@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Card,
     CardContent,
@@ -41,8 +43,33 @@ export default function Messenger({ uid, conversationId, messages, setMessages }
                 setMessages((prev) => [...prev, message]);
             });
 
+            // Handle page unload/navigation events
+            const handleBeforeUnload = (event) => {
+                if (socketRef.current) {
+                    socketRef.current.emit("leave_room", { conversation_id: conversationId });
+                }
+            };
+
+            const handlePageHide = () => {
+                if (socketRef.current) {
+                    socketRef.current.emit("leave_room", { conversation_id: conversationId });
+                }
+            };
+
+            // Add event listeners
+            window.addEventListener('beforeunload', handleBeforeUnload);
+            window.addEventListener('pagehide', handlePageHide);
+
             return () => {
-                socketRef.current.disconnect();
+                // Clean up event listeners
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+                window.removeEventListener('pagehide', handlePageHide);
+
+                // Send leave_room before disconnecting
+                if (socketRef.current) {
+                    socketRef.current.emit("leave_room", { conversation_id: conversationId });
+                    socketRef.current.disconnect();
+                }
             };
         }
     }, [conversationId]);
