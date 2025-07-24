@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
 import { getRoutes, logout } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { useSidebar } from "@/lib/sidebar";
@@ -24,16 +25,73 @@ import useProfileStore from "@/store/session.store";
 export default function SideBar() {
     const pathname = usePathname()
     const [permissions, setPermissions] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { profile } = useProfileStore();
 
     useEffect(() => {
         async function defineSidebarRoutes() {
-            const res = await getRoutes()
-            setPermissions(res)
+            try {
+                setIsLoading(true)
+                const res = await getRoutes()
+                setPermissions(res)
+            } catch (error) {
+                console.error('Error fetching routes:', error)
+            } finally {
+                setIsLoading(false)
+            }
         }
         defineSidebarRoutes()
     }, [])
+
+    // Skeleton loading component
+    const SidebarSkeleton = () => (
+        <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+            {/* Main section skeleton */}
+            <div className="mb-6">
+                <Skeleton className="h-4 w-16 mb-2" />
+                <div className="space-y-2">
+                    <div className="flex items-center gap-3 px-3 py-2">
+                        <Skeleton className="h-4 w-4 rounded-sm" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                    <div className="flex items-center gap-3 px-3 py-2">
+                        <Skeleton className="h-4 w-4 rounded-sm" />
+                        <Skeleton className="h-4 w-20" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Forms section skeleton */}
+            <div className="mb-6">
+                <Skeleton className="h-4 w-12 mb-2" />
+                <div className="space-y-2">
+                    {Array(9).fill(0).map((_, i) => (
+                        <div key={i} className="flex items-center gap-3 px-3 py-2">
+                            <Skeleton className="h-4 w-4 rounded-sm" />
+                            <Skeleton className="h-4 w-32" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Management section skeleton */}
+            <div className="mb-6">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <div className="space-y-2">
+                    {Array(3).fill(0).map((_, i) => (
+                        <div key={i} className="flex items-center gap-3 px-3 py-2">
+                            <Skeleton className="h-4 w-4 rounded-sm" />
+                            <Skeleton className="h-4 w-28" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Logout button skeleton */}
+            <Skeleton className="w-full h-10 my-4 rounded-md" />
+        </nav>
+    )
 
     const sideBarRoutes = [
         {
@@ -50,7 +108,7 @@ export default function SideBar() {
                 { title: "API Integration", url: "/forms/api", icon: Settings, permission: "API" },
                 { title: "Hire Smartsheet Expert", url: "/forms/experts", icon: BookmarkCheck, permission: "EXP" },
                 { title: "System Admin Support", url: "/forms/admin", icon: ShieldCheck, permission: "ADM" },
-                { title: "Reports Dashboard", url: "/forms/reports", icon: BarChart, permission: "REP" },
+                { title: "Adhoc Request", url: "/forms/adhoc", icon: BarChart, permission: "ADH" },
                 { title: "Premium App Support", url: "/forms/premium", icon: Star, permission: "PRM" },
                 { title: "Book One on One", url: "/forms/one-on-one", icon: CalendarCheck, permission: "ONE" },
                 { title: "PMO Control Center", url: "/forms/pmo", icon: Puzzle, permission: "PMO" },
@@ -61,7 +119,8 @@ export default function SideBar() {
             title: "Management",
             routes: [
                 { title: "Admin Users", url: "/management/permissions", icon: HandCoins, permission: "SUPER" },
-                { title: "User Dashboard Access", url: "/management/admin", icon: UserCog2, permission: "SUPER" }
+                { title: "User Dashboard Access", url: "/management/admin", icon: UserCog2, permission: "SUPER" },
+                { title: "Manage Time Slots", url: "/management/timeslots", icon: CalendarCheck, permission: "ONE" },
             ],
         },
     ];
@@ -84,53 +143,66 @@ export default function SideBar() {
             >
                 <div className="flex h-full flex-col gap-2">
                     <div className="h-14 flex items-center border-b border-slate-300 p-4 mb-4 cursor-pointer">
-                        <Avatar className="w-8 h-8">
-                            <AvatarImage src="https://github.com/shadcn.png" />
-                            <AvatarFallback>DL</AvatarFallback>
-                        </Avatar>
-                        <span className="ml-2 font-semibold">{profile?.name}</span>
+                        {isLoading ? (
+                            <>
+                                <Skeleton className="w-8 h-8 rounded-full" />
+                                <Skeleton className="ml-2 h-4 w-24" />
+                            </>
+                        ) : (
+                            <>
+                                <Avatar className="w-8 h-8">
+                                    <AvatarImage src="https://github.com/shadcn.png" />
+                                    <AvatarFallback>DL</AvatarFallback>
+                                </Avatar>
+                                <span className="ml-2 font-semibold">{profile?.name}</span>
+                            </>
+                        )}
                     </div>
                     <ScrollArea className="w-full flex-1" orientation="vertical">
-                        <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-                            {sideBarRoutes.map((route, i) => {
-                                const filteredSubRoutes = route.routes.filter(subRoute =>
-                                    permissions.includes(subRoute.permission)
-                                );
-
-                                if (filteredSubRoutes.length > 0) {
-                                    return (
-                                        <div className="mb-6" key={i}>
-                                            <p className="text-[1rem] mb-2 text-gray-500">{route.title}</p>
-                                            {filteredSubRoutes.map(subRoute => (
-                                                <div key={subRoute.title}>
-                                                    <Link
-                                                        href={subRoute.url}
-                                                        onClick={() => setIsMobileMenuOpen(false)}
-                                                        className={cn(
-                                                            'flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-all hover:bg-slate-200',
-                                                            pathname.startsWith(subRoute.url) && subRoute.url != '/' ? 'bg-slate-300' : '',
-                                                            pathname.includes(subRoute.permission) ? 'bg-slate-300' : '',
-                                                            subRoute.url === '/' && pathname === '/' ? 'bg-slate-300' : ''
-                                                        )}
-                                                    >
-                                                        <subRoute.icon className="h-4 w-4" />
-                                                        {subRoute.title}
-                                                    </Link>
-                                                </div>
-                                            ))}
-                                        </div>
+                        {isLoading ? (
+                            <SidebarSkeleton />
+                        ) : (
+                            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+                                {sideBarRoutes.map((route, i) => {
+                                    const filteredSubRoutes = route.routes.filter(subRoute =>
+                                        permissions.includes(subRoute.permission)
                                     );
-                                }
-                                return null;
-                            })}
-                            <Button className="w-full my-4 px-8 mt-auto" onClick={async () => {
-                                await logout()
-                                window.location.href = '/login'
-                            }}>
-                                <LogOut className="mr-2 h-4 w-4" />
-                                Logout
-                            </Button>
-                        </nav>
+
+                                    if (filteredSubRoutes.length > 0) {
+                                        return (
+                                            <div className="mb-6" key={i}>
+                                                <p className="text-[1rem] mb-2 text-gray-500">{route.title}</p>
+                                                {filteredSubRoutes.map(subRoute => (
+                                                    <div key={subRoute.title}>
+                                                        <Link
+                                                            href={subRoute.url}
+                                                            onClick={() => setIsMobileMenuOpen(false)}
+                                                            className={cn(
+                                                                'flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-all hover:bg-slate-200',
+                                                                pathname.startsWith(subRoute.url) && subRoute.url != '/' ? 'bg-slate-300' : '',
+                                                                pathname.includes(subRoute.permission) ? 'bg-slate-300' : '',
+                                                                subRoute.url === '/' && pathname === '/' ? 'bg-slate-300' : ''
+                                                            )}
+                                                        >
+                                                            <subRoute.icon className="h-4 w-4" />
+                                                            {subRoute.title}
+                                                        </Link>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                                <Button className="w-full my-4 px-8 mt-auto" onClick={async () => {
+                                    await logout()
+                                    window.location.href = '/login'
+                                }}>
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    Logout
+                                </Button>
+                            </nav>
+                        )}
                     </ScrollArea>
                 </div>
             </aside>

@@ -2,14 +2,14 @@
 
 import DataTablePaginated from "@/components/custom/DataTablePaginated";
 import Pagelayout from "@/components/layout/PageLayout";
-import { ReportsDashboardColumns } from "@/lib/tableCols";
+import { AdhocRequestColumns } from "@/lib/tableCols";
 
-export default function ReportsDashboardForm() {
+export default function AdhocRequestForm() {
     return (
-        <Pagelayout title={"Reports & Dashboard"}>
+        <Pagelayout title={"Adhoc Request"}>
             <DataTablePaginated
-                columns={ReportsDashboardColumns}
-                dataUrl={`get-all-forms/REP`}
+                columns={AdhocRequestColumns}
+                dataUrl={`get-all-forms/ADH`}
                 filters={{}}
             />
         </Pagelayout>

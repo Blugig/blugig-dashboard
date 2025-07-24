@@ -3,7 +3,7 @@ export const PERMISSIONS = [
     { name: "API Integration", code: "API" },
     { name: "Hire Smartsheet Expert", code: "EXP" },
     { name: "System Admin Support", code: "ADM" },
-    { name: "Reports Dashboard", code: "REP" },
+    { name: "Adhoc Request", code: "ADH" },
     { name: "Premium App Support", code: "PRM" },
     { name: "Book One on One", code: "ONE" },
     { name: "PMO Control Center", code: "PMO" },

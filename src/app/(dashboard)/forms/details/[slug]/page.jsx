@@ -106,6 +106,7 @@ export default function FormDetails({ params }) {
                     conversationId={conversationId}
                     messages={messages}
                     setMessages={setMessages}
+                    session={data.session}
                 />
             )}
         </Pagelayout>

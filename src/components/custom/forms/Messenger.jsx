@@ -21,7 +21,7 @@ import { postDataToAPI } from "@/lib/api";
 import { Newspaper } from "lucide-react";
 import { CreateOffer } from "./CreateOffer";
 
-export default function Messenger({ uid, conversationId, messages, setMessages }) {
+export default function Messenger({ uid, conversationId, messages, setMessages, session }) {
 
     const { profile, refreshProfile } = useProfileStore();
 
@@ -34,7 +34,11 @@ export default function Messenger({ uid, conversationId, messages, setMessages }
         })();
 
         if (conversationId) {
-            socketRef.current = io(process.env.NEXT_PUBLIC_WS_URL);
+            socketRef.current = io(process.env.NEXT_PUBLIC_WS_URL, {
+                extraHeaders: {
+                    token: session
+                }
+            });
 
             socketRef.current.emit("join_room", { conversation_id: conversationId });
             console.log("Joined Conversation");
@@ -199,19 +203,29 @@ export default function Messenger({ uid, conversationId, messages, setMessages }
                                 )}
                                 {message.message_type === "TEXT" && message.body}
                                 {message.message_type === "OFFER" && message.offer && (
-                                    <div className="bg-white text-black p-4 rounded-lg">
-                                        <h3 className="font-semibold text-lg">{message.offer.name}</h3>
-                                        <p className="text-sm text-muted-foreground">{message.offer.description}</p>
-                                        <div className="my-2 space-y-1">
-                                            <p><span className="font-bold">Timeline:</span> {message.offer.timeline}</p>
-                                            <p><span className="font-bold">Budget:</span> ${message.offer.budget}</p>
-                                            <p><span className="font-bold">Status:</span> {message.offer.status}</p>
+                                    <div className="bg-white/95 backdrop-blur-sm text-black p-6 rounded-xl shadow-lg border border-gray-100">
+                                        <h3 className="font-semibold text-xl mb-2 text-primary">{message.offer.name}</h3>
+                                        <p className="text-sm text-gray-600 mb-4">{message.offer.description}</p>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-gray-700">
+                                                <span className="font-medium min-w-20">Timeline:</span>
+                                                <span className="bg-blue-50 px-3 py-1 rounded-full text-sm">
+                                                    {message.offer.timeline}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-700">
+                                                <span className="font-medium min-w-20">Budget:</span>
+                                                <span className="bg-green-50 px-3 py-1 rounded-full text-sm text-green-700">
+                                                    ${message.offer.budget}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-700">
+                                                <span className="font-medium min-w-20">Status:</span>
+                                                <span className="bg-purple-50 px-3 py-1 rounded-full text-sm text-purple-700">
+                                                    {message.offer.status}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <CreateOffer 
-                                            uid={uid}
-                                            sendOfferMessage={handleSendOffer}
-                                            offer={message.offer}
-                                        />
                                     </div>
                                 )}
                             </ChatBubbleMessage>
