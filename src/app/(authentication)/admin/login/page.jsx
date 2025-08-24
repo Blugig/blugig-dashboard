@@ -80,7 +80,7 @@ export default function Login() {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="example@piikeup.com" {...field} />
+                                    <Input placeholder="example@blugig.com" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
