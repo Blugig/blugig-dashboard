@@ -3,7 +3,7 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 
-axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL + "admin/"
 axios.defaults.headers.common["Content-Type"] = 'application/json'
 
 export async function verifyTokenBackend(token) {
@@ -19,27 +19,40 @@ export async function verifyTokenBackend(token) {
     }
 }
 
-export async function fetchFromAPI(url) {
+export async function fetchFromAPI(url, is_freelancer=false) {
+    if (is_freelancer) {
+        axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL + "freelancers/"
+    }
+
     axios.defaults.headers.common["Authorization"] = `Bearer ${cookies().get("session").value}`
     try {
         const res = await axios.get(url);
+
         return res.data.data;
     } catch (error) {
-        console.error("API call error:", error.response.data);
+        console.error("API call error:", error.response?.data);
         return { success: false };
     }
 }
 
-export async function postDataToAPI(url, data, sendingFile = false) {
+export async function postDataToAPI(url, data, sendingFile = false, is_freelancer = false) {
+    
+    if (is_freelancer) {
+        axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL + "freelancers/"
+    }   
+
     axios.defaults.headers.common["Authorization"] = `Bearer ${cookies().get("session").value}`
     if (sendingFile) {
         axios.defaults.headers.common["Content-Type"] = "multipart/form-data"
     }
     try {
         const response = await axios.post(url, data);
+        if (response.data?.success === false) {
+            throw new Error(response.data.message);
+        }
         return response.data.data;
     } catch (error) {
         console.error("API call error:", error.response.data);
-        return { success: false, message: error.response.data?.message };
+        throw new Error(error.response.data?.message);
     }
 }

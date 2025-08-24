@@ -1,4 +1,5 @@
 export const PERMISSIONS = [
+    { name: "Manage Freelancers & Jobs", code: "FREE" },
     { name: "Solution Implementation", code: "SOL" },
     { name: "API Integration", code: "API" },
     { name: "Hire Smartsheet Expert", code: "EXP" },
@@ -16,4 +17,6 @@ export const getPermName = (code) => {
             return PERMISSIONS[i].name;
         }
     }
+
+    return "-";
 }

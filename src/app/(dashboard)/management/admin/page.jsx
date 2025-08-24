@@ -72,12 +72,12 @@ function AllAdminUsersContent() {
         const res = await fetchFromAPI('get-admin-details/' + email);
         setAdminUser(res)
         
-        let perm_codes = res?.permissions.split(",");
+        let perm_codes = res?.permissions;
         
         let defaultPermissions = PERMISSIONS.reduce((acc, permission) => {
             acc[permission.code] = perm_codes?.includes(permission.code);
             return acc;
-        }, {})
+        }, {});
         console.log(defaultPermissions);
 
         setDefaultValues(defaultPermissions)
@@ -95,7 +95,7 @@ function AllAdminUsersContent() {
                 permissions: perms_keys,
             });
 
-            if (res) {
+            if (res || res.success) {
                 toast("Success", {
                     description: "Permissions updated successfully!"
                 });

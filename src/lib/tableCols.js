@@ -77,6 +77,68 @@ export const UserDetailsColumns = [
     },
 ];
 
+export const FreelancerDetailsColumns = [
+    {
+        accessorKey: "id",
+        header: "User ID",
+        cell: ({ row }) => <div className="text-blue-500">{row.getValue("id")}</div>,
+    },
+    {
+        accessorKey: "name",
+        header: "Name",
+        cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    },
+    {
+        accessorKey: "email",
+        header: "Email",
+        cell: ({ row }) => <div>{row.getValue("email")}</div>,
+    },
+    {
+        accessorKey: "phone",
+        header: "Phone",
+        cell: ({ row }) => <div>{row.getValue("country_code")} {row.getValue("phone")}</div>,
+    },
+    {
+        accessorKey: "is_active",
+        header: "Account Status",
+        cell: ({ row }) => (
+            <Badge className={row.getValue("is_active") ? "bg-success" : "bg-destructive"}>
+                {row.getValue("is_active") ? "Active" : "Inactive"}
+            </Badge>
+        ),
+    },
+    {
+        accessorKey: "is_approved",
+        header: "Approval Status",
+        cell: ({ row }) => (
+            <Badge className={row.getValue("is_approved") ? "bg-success" : "bg-destructive"}>
+                {row.getValue("is_approved") ? "Approved" : "Pending"}
+            </Badge>
+        ),
+    },
+    {
+        accessorKey: "created_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Account Creation Date
+                    <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => <div>{formatDate(row.getValue("created_at"))}</div>,
+    },
+    {
+        id: "action",
+        enableHiding: false,
+        header: "Action",
+        cell: ({ row }) => <Link href={`freelancers/${row.getValue('id')}/`} className="text-blue-500">View</Link>,
+    },
+];
+
 export const UserSubmissionsColumns = [
     {
         accessorKey: "created_at",
@@ -144,13 +206,13 @@ export const SolutionImplementationColumns = [
         header: "User",
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
-    { accessorKey: "project_name", header: "Project Name" },
-    { accessorKey: "project_type", header: "Project Type" },
-    { accessorKey: "industry", header: "Industry" },
-    { accessorKey: "project_goals", header: "Goals" },
+    { accessorKey: "project_title", header: "Project Title" },
+    { accessorKey: "implementation_type", header: "Implementation Type" },
+    { accessorKey: "description", header: "Description" },
+    { accessorKey: "team_size", header: "Team Size" },
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "budget", header: "Budget" },
-    { accessorKey: "contact_preference", header: "Contact Preference" },
+    { accessorKey: "current_tools", header: "Current Tools" },
     {
         id: "action",
         header: "Action",
@@ -166,18 +228,15 @@ export const PremiumAppSupportColumns = [
         header: "User",
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
-    { accessorKey: "add_on_to_configure", header: "Add-on to Configure" },
-    { accessorKey: "objective", header: "Objective" },
-    { accessorKey: "current_setup_status", header: "Setup Status" },
-    { accessorKey: "integration_needs", header: "Integration Needs" },
-    { accessorKey: "smartsheet_plan", header: "Smartsheet Plan" },
-    {
-        accessorKey: "start_date",
-        header: "Start Date",
-        cell: ({ row }) => formatDate(row.getValue("start_date"))
-    },
-    { accessorKey: "instruction", header: "Instructions" },
-    { accessorKey: "contact_preference", header: "Contact Preference" },
+    { accessorKey: "organization_name", header: "Organization" },
+    { accessorKey: "premium_addons", header: "Premium Add-ons" },
+    { accessorKey: "primary_use_case", header: "Primary Use Case" },
+    { accessorKey: "current_smartsheet_plan", header: "Smartsheet Plan" },
+    { accessorKey: "team_size", header: "Team Size" },
+    { accessorKey: "implementation_scope", header: "Implementation Scope" },
+    { accessorKey: "timeline", header: "Timeline" },
+    { accessorKey: "budget", header: "Budget" },
+    { accessorKey: "primary_contact_email", header: "Contact Email" },
     {
         id: "action",
         header: "Action",
@@ -192,11 +251,14 @@ export const ApiIntegrationColumns = [
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
     { accessorKey: "integration_type", header: "Integration Type" },
-    { accessorKey: "target_application", header: "Target App" },
-    { accessorKey: "integration_objective", header: "Objective" },
+    { accessorKey: "source_system", header: "Source System" },
+    { accessorKey: "data_to_sync", header: "Data to Sync" },
+    { accessorKey: "sync_direction", header: "Sync Direction" },
+    { accessorKey: "sync_frequency", header: "Sync Frequency" },
+    { accessorKey: "data_volumne", header: "Data Volume" },
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "budget", header: "Budget" },
-    { accessorKey: "instructions", header: "Instructions" },
+    { accessorKey: "description", header: "Description" },
     {
         id: "action",
         header: "Action",
@@ -210,12 +272,14 @@ export const HireSmartsheetExpertColumns = [
         header: "User",
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
-    { accessorKey: "requirements", header: "Requirements" },
-    { accessorKey: "is_full_time", header: "Full Time", cell: ({ row }) => <Badge>{row.getValue("is_full_time") ? "Yes" : "No"}</Badge> },
-    { accessorKey: "project_scope", header: "Scope" },
-    { accessorKey: "expected_duration", header: "Duration" },
-    { accessorKey: "domain_focus", header: "Domain" },
-    { accessorKey: "start_date", header: "Start Date", cell: ({ row }) => formatDate(row.getValue("start_date")) },
+    { accessorKey: "position_type", header: "Position Type" },
+    { accessorKey: "job_title", header: "Job Title" },
+    { accessorKey: "company_name", header: "Company" },
+    { accessorKey: "location", header: "Location" },
+    { accessorKey: "experience_level", header: "Experience Level" },
+    { accessorKey: "budget", header: "Budget" },
+    { accessorKey: "start_date", header: "Start Date" },
+    { accessorKey: "contract_duration", header: "Duration" },
     {
         id: "action",
         header: "Action",
@@ -229,13 +293,15 @@ export const SystemAdminSupportColumns = [
         header: "User",
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
-    { accessorKey: "company_name", header: "Company" },
-    { accessorKey: "number_of_users", header: "Users" },
-    { accessorKey: "type_of_support", header: "Support Type" },
-    { accessorKey: "start_date", header: "Start Date", cell: ({ row }) => formatDate(row.getValue("start_date")) },
+    { accessorKey: "support_needed", header: "Support Needed" },
+    { accessorKey: "smartsheet_plan", header: "Smartsheet Plan" },
+    { accessorKey: "number_of_users", header: "Number of Users" },
+    { accessorKey: "current_admin_experience", header: "Admin Experience" },
+    { accessorKey: "current_challenges", header: "Current Challenges" },
+    { accessorKey: "support_frequency", header: "Support Frequency" },
+    { accessorKey: "timezone", header: "Timezone" },
+    { accessorKey: "urgency_level", header: "Urgency Level" },
     { accessorKey: "budget", header: "Budget" },
-    { accessorKey: "support_needs", header: "Support Needs" },
-    { accessorKey: "contact_preference", header: "Contact" },
     {
         id: "action",
         header: "Action",
@@ -267,15 +333,11 @@ export const BookOneOnOneColumns = [
         header: "User",
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
-    { accessorKey: "consultation_focus", header: "Focus" },
-    { accessorKey: "time_slot", header: "Time Slot" },
-    { accessorKey: "time_zone", header: "Time Zone" },
-    { accessorKey: "preferred_meeting_platform", header: "Platform" },
-    { accessorKey: "full_name", header: "Name" },
-    { accessorKey: "company_name", header: "Company" },
-    { accessorKey: "business_email", header: "Email" },
-    { accessorKey: "phone_number", header: "Phone" },
-    { accessorKey: "agenda", header: "Agenda" },
+    { accessorKey: "preferred_date", header: "Preferred Date" },
+    { accessorKey: "preferred_time", header: "Preferred Time" },
+    { accessorKey: "consultation_focus", header: "Consultation Focus" },
+    { accessorKey: "smartsheet_experience", header: "Smartsheet Experience" },
+    { accessorKey: "team_size", header: "Team Size" },
     {
         id: "action",
         header: "Action",
@@ -289,27 +351,15 @@ export const PmoControlCenterColumns = [
         header: "User",
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
-    { accessorKey: "service_type", header: "Service Type" },
-    { accessorKey: "industry", header: "Industry" },
-    { accessorKey: "project_details", header: "Details" },
-    {
-        accessorKey: "expected_projects",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Expected Projects
-                    <ArrowDownUp className="ml-2 h-4 w-4" />
-                </Button>
-            )
-        },
-    },
-    { accessorKey: "smartsheet_admin_access", header: "Admin Access" },
-    { accessorKey: "current_setup", header: "Setup Status", cell: ({ row }) => <Badge>{row.getValue("current_setup") ? "Yes" : "No"}</Badge> },
+    { accessorKey: "organization_name", header: "Organization" },
+    { accessorKey: "control_centre_type", header: "Control Centre Type" },
+    { accessorKey: "required_features", header: "Required Features" },
+    { accessorKey: "expected_project_scale", header: "Project Scale" },
+    { accessorKey: "team_size", header: "Team Size" },
+    { accessorKey: "current_smartsheet_experience", header: "Smartsheet Experience" },
+    { accessorKey: "budget", header: "Budget" },
     { accessorKey: "timeline", header: "Timeline" },
-    { accessorKey: "contact_preference", header: "Contact" },
+    { accessorKey: "primary_contact_email", header: "Contact Email" },
     {
         id: "action",
         header: "Action",
@@ -323,15 +373,208 @@ export const LicenseRequestColumns = [
         header: "User",
         cell: ({ row }) => <Link href={`/dashboard/users/${row.original.user?.id}`} className="text-blue-500">{row.original.user?.name}</Link>,
     },
-    { accessorKey: "name", header: "Name" },
-    { accessorKey: "company_email", header: "Email" },
     { accessorKey: "license_type", header: "License Type" },
-    { accessorKey: "premium_add_ons", header: "Premium Add-ons" },
-    { accessorKey: "instructions", header: "Instructions" },
-    { accessorKey: "number_of_licenses", header: "Qty" },
+    { accessorKey: "company_name", header: "Company" },
+    { accessorKey: "industry", header: "Industry" },
+    { accessorKey: "team_size", header: "Team Size" },
+    { accessorKey: "full_name", header: "Full Name" },
+    { accessorKey: "email", header: "Email" },
+    { accessorKey: "phone", header: "Phone" },
+    { accessorKey: "job_title", header: "Job Title" },
+    { accessorKey: "timeline", header: "Timeline" },
+    { accessorKey: "project_needs", header: "Project Needs" },
     {
         id: "action",
         header: "Action",
         cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-LIR`} className="text-blue-500">View</Link>,
     }
 ];
+
+export const JobDetailsColumns = [
+    {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => <div className="text-blue-500">{row.getValue("id")}</div>,
+    },
+    {
+        accessorKey: "job_type",
+        header: "Type",
+        cell: ({ row }) => <Badge variant="outline">{row.getValue("job_type")}</Badge>,
+    },
+    {
+        accessorKey: "client",
+        header: "Client",
+        cell: ({ row }) => {
+            const client = row.getValue("client");
+            return client ? (
+                <Link href={`/dashboard/users/${client.id}`} className="text-blue-500">
+                    {client.name}
+                </Link>
+            ) : <span>-</span>;
+        },
+    },
+    {
+        accessorKey: "form_submission",
+        header: "Form Type",
+        cell: ({ row }) => {
+            const formSubmission = row.getValue("form_submission");
+            return <span>{formSubmission.form_name}</span>;
+        },
+    },
+    {
+        accessorKey: "form_submission.form_title",
+        header: "Form Title",
+        cell: ({ row }) => {
+            const formSubmission = row.original.form_submission;
+            return formSubmission?.form_title || "-";
+        },
+    },
+    {
+        accessorKey: "form_submission.status",
+        header: "Form Status",
+        cell: ({ row }) => {
+            const formSubmission = row.original.form_submission;
+            return formSubmission ? (
+                <Badge variant={formSubmission.status === 'completed' ? 'default' : 'secondary'}>
+                    {formSubmission.status}
+                </Badge>
+            ) : <span>-</span>;
+        },
+    },
+    {
+        accessorKey: "awarded_to_user_type",
+        header: "Awarded To",
+        cell: ({ row }) => {
+            const userType = row.getValue("awarded_to_user_type");
+            return userType ? <Badge variant="outline">{userType}</Badge> : <span>Not Awarded</span>;
+        },
+    },
+    {
+        accessorKey: "awarded_admin",
+        header: "Awarded Admin",
+        cell: ({ row }) => {
+            const admin = row.getValue("awarded_admin");
+            return admin ? admin.name : "-";
+        },
+    },
+    {
+        accessorKey: "awarded_freelancer",
+        header: "Awarded Freelancer",
+        cell: ({ row }) => {
+            const freelancer = row.getValue("awarded_freelancer");
+            return freelancer ? freelancer.name : "-";
+        },
+    },
+    {
+        accessorKey: "_count.offers",
+        header: "Offers",
+        cell: ({ row }) => {
+            const count = row.original._count?.offers || 0;
+            return <span>{count}</span>;
+        },
+    },
+    {
+        accessorKey: "_count.conversations",
+        header: "Conversations",
+        cell: ({ row }) => {
+            const count = row.original._count?.conversations || 0;
+            return <span>{count}</span>;
+        },
+    },
+    {
+        accessorKey: "created_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Created Date
+                    <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => <div>{formatDate(row.getValue("created_at"))}</div>,
+    },
+    {
+        id: "action",
+        header: "Action",
+        cell: ({ row }) => (
+            <div className="flex space-x-2">
+                <Link href={`/dashboard/jobs/${row.getValue('id')}`} className="text-blue-500">
+                    View
+                </Link>
+            </div>
+        ),
+    },
+];
+
+export const JobDetailsFreelancerColumns = [
+    {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => <div className="text-blue-500">{row.getValue("id")}</div>,
+    },
+    {
+        accessorKey: "client",
+        header: "Client",
+        cell: ({ row }) => {
+            const client = row.getValue("client");
+            return client ? (
+                <Link href={`/dashboard/users/${client.id}`} className="text-blue-500">
+                    {client.name}
+                </Link>
+            ) : <span>-</span>;
+        },
+    },
+    {
+        accessorKey: "form_submission",
+        header: "Job Type",
+        cell: ({ row }) => {
+            const formSubmission = row.getValue("form_submission");
+            return <span>{formSubmission.form_name}</span>;
+        },
+    },
+    {
+        accessorKey: "form_submission.form_title",
+        header: "Job Title",
+        cell: ({ row }) => {
+            const formSubmission = row.original.form_submission;
+            return formSubmission?.form_title || "-";
+        },
+    },
+    {
+        accessorKey: "form_submission.form_description",
+        header: "Job Description",
+        cell: ({ row }) => {
+            const formSubmission = row.original.form_submission;
+            return formSubmission?.form_description || "-";
+        },
+    },
+    {
+        accessorKey: "created_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Created Date
+                    <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => <div>{formatDate(row.getValue("created_at"))}</div>,
+    },
+    {
+        id: "action",
+        header: "Action",
+        cell: ({ row }) => (
+            <div className="flex space-x-2">
+                <Link href={`/jobs/${row.getValue('id')}`} className="text-blue-500">
+                    View
+                </Link>
+            </div>
+        ),
+    },
+]

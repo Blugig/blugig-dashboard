@@ -6,7 +6,19 @@ import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     BookmarkCheck, CircleAlert, HandCoins,
-    LineChart, LogOut, NotepadText, UserCog2, Users, Menu
+    LineChart, LogOut, NotepadText, UserCog2, Users, Menu,
+    User,
+    BriefcaseBusiness,
+    LayoutDashboard,
+    Briefcase,
+    UserCheck,
+    ListChecks,
+    BadgeCheck,
+    Clock,
+    BarChart3,
+    CalendarCheck2,
+    Users2,
+    UserCog
 } from 'lucide-react';
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
@@ -97,8 +109,19 @@ export default function SideBar() {
         {
             title: "Main",
             routes: [
-                { title: "Dashboard", url: "/", icon: LineChart, permission: "SUPER"  },
+                { title: "My Profile", url: "/", icon: User, permission: "ALL" },
+                { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, permission: "SUPER" },
                 { title: "Customers", url: "/dashboard/users", icon: Users, permission: "SUPER" },
+                { title: "Freelancers", url: "/dashboard/freelancers", icon: UserCheck, permission: "SUPER" },
+                { title: "Job Pool", url: "/dashboard/jobs", icon: Briefcase, permission: "SUPER" },
+            ],
+        },
+        {
+            title: "Jobs",
+            routes: [
+                { title: "All Jobs", url: "/jobs", icon: ListChecks, permission: "ALL" },
+                { title: "Awarded Jobs", url: "/jobs/awarded", icon: BadgeCheck, permission: "ALL" },
+                { title: "Pending Jobs", url: "/jobs/pending", icon: Clock, permission: "ALL" },
             ],
         },
         {
@@ -108,9 +131,9 @@ export default function SideBar() {
                 { title: "API Integration", url: "/forms/api", icon: Settings, permission: "API" },
                 { title: "Hire Smartsheet Expert", url: "/forms/experts", icon: BookmarkCheck, permission: "EXP" },
                 { title: "System Admin Support", url: "/forms/admin", icon: ShieldCheck, permission: "ADM" },
-                { title: "Adhoc Request", url: "/forms/adhoc", icon: BarChart, permission: "ADH" },
+                { title: "Adhoc Request", url: "/forms/adhoc", icon: BarChart3, permission: "ADH" },
                 { title: "Premium App Support", url: "/forms/premium", icon: Star, permission: "PRM" },
-                { title: "Book One on One", url: "/forms/one-on-one", icon: CalendarCheck, permission: "ONE" },
+                { title: "Book One on One", url: "/forms/one-on-one", icon: CalendarCheck2, permission: "ONE" },
                 { title: "PMO Control Center", url: "/forms/pmo", icon: Puzzle, permission: "PMO" },
                 { title: "License Request", url: "/forms/license", icon: ShieldCheck, permission: "LIR" },
             ],
@@ -118,9 +141,8 @@ export default function SideBar() {
         {
             title: "Management",
             routes: [
-                { title: "Admin Users", url: "/management/permissions", icon: HandCoins, permission: "SUPER" },
-                { title: "User Dashboard Access", url: "/management/admin", icon: UserCog2, permission: "SUPER" },
-                { title: "Manage Time Slots", url: "/management/timeslots", icon: CalendarCheck, permission: "ONE" },
+                { title: "Admin Users", url: "/management/permissions", icon: Users2, permission: "SUPER" },
+                { title: "User Dashboard Access", url: "/management/admin", icon: UserCog, permission: "SUPER" },
             ],
         },
     ];
@@ -151,8 +173,8 @@ export default function SideBar() {
                         ) : (
                             <>
                                 <Avatar className="w-8 h-8">
-                                    <AvatarImage src="https://github.com/shadcn.png" />
-                                    <AvatarFallback>DL</AvatarFallback>
+                                    <AvatarImage src={profile?.profile_photo} />
+                                    <AvatarFallback>{profile?.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="ml-2 font-semibold">{profile?.name}</span>
                             </>
@@ -164,9 +186,13 @@ export default function SideBar() {
                         ) : (
                             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
                                 {sideBarRoutes.map((route, i) => {
-                                    const filteredSubRoutes = route.routes.filter(subRoute =>
-                                        permissions.includes(subRoute.permission)
-                                    );
+                                    const filteredSubRoutes = route.routes.filter(subRoute => {
+                                        // Hide Jobs section routes from SUPER users
+                                        if (route.title === "Jobs" && permissions.includes("SUPER")) {
+                                            return false;
+                                        }
+                                        return permissions.includes(subRoute.permission) || subRoute.permission === "ALL";
+                                    });
 
                                     if (filteredSubRoutes.length > 0) {
                                         return (
@@ -179,9 +205,28 @@ export default function SideBar() {
                                                             onClick={() => setIsMobileMenuOpen(false)}
                                                             className={cn(
                                                                 'flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-all hover:bg-slate-200',
-                                                                pathname.startsWith(subRoute.url) && subRoute.url != '/' ? 'bg-slate-300' : '',
-                                                                pathname.includes(subRoute.permission) ? 'bg-slate-300' : '',
-                                                                subRoute.url === '/' && pathname === '/' ? 'bg-slate-300' : ''
+                                                                (() => {
+                                                                    // Exact match for home page
+                                                                    if (subRoute.url === '/' && pathname === '/') {
+                                                                        return 'bg-slate-300';
+                                                                    }
+                                                                    // Exact match for dashboard page
+                                                                    if (subRoute.url === '/dashboard' && pathname === '/dashboard') {
+                                                                        return 'bg-slate-300';
+                                                                    }
+                                                                    // For Jobs routes, only highlight exact match
+                                                                    if (route.title === 'Jobs') {
+                                                                        if (pathname === subRoute.url) {
+                                                                            return 'bg-slate-300';
+                                                                        }
+                                                                        return '';
+                                                                    }
+                                                                    // For other routes, check if pathname starts with the route URL and it's not the root
+                                                                    if (subRoute.url !== '/' && subRoute.url !== '/dashboard' && pathname.startsWith(subRoute.url)) {
+                                                                        return 'bg-slate-300';
+                                                                    }
+                                                                    return '';
+                                                                })()
                                                             )}
                                                         >
                                                             <subRoute.icon className="h-4 w-4" />
