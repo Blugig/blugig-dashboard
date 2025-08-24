@@ -3,18 +3,18 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 
-axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL + "admin/"
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL
 axios.defaults.headers.common["Content-Type"] = 'application/json'
 
 // Create reusable API clients
-const adminApiClient = axios.create({
+export const adminApiClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL + "admin/",
     headers: {
         "Content-Type": "application/json"
     }
 });
 
-const freelancerApiClient = axios.create({
+export const freelancerApiClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
     headers: {
         "Content-Type": "application/json"

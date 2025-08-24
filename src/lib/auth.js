@@ -4,13 +4,14 @@ import axios from "axios";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { NextResponse } from "next/server";
+import { freelancerApiClient } from "./api";
 
 // axios.defaults.baseURL = "http://127.0.0.1:8000/v1/admin/"
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL
 
 export async function freelanceLogin(formData) {
     try {
-        const res = await axios.post("freelancers/login/", formData)
+        const res = await freelancerApiClient.post("freelancers/login/", formData)
 
         if (res.data.success) {
             const data = res.data.data;
@@ -56,7 +57,7 @@ export async function login(formData) {
         }
         return res.data.success;
     } catch (error) {
-        console.log(error.data)
+        console.log(error)
         return false;
     }
 }
