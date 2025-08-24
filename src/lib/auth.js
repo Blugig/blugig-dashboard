@@ -64,6 +64,9 @@ export async function login(formData) {
 export async function logout() {
     cookies().delete('session')
     cookies().delete('sessperms')
+    
+    // Clear Authorization header from axios defaults
+    delete axios.defaults.headers.common["Authorization"]
 }
 
 export async function verifySession(request) {

@@ -6,6 +6,30 @@ import { cookies } from "next/headers";
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL + "admin/"
 axios.defaults.headers.common["Content-Type"] = 'application/json'
 
+// Create reusable API clients
+const adminApiClient = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_URL + "admin/",
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
+
+const freelancerApiClient = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
+
+// Helper function to add auth token to client
+function addAuthToken(client) {
+    const token = cookies().get("session")?.value;
+    if (token) {
+        client.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+    return client;
+}
+
 export async function verifyTokenBackend(token) {
     try {
         const res = await axios.get("verifyGoogleToken/", {
@@ -20,14 +44,10 @@ export async function verifyTokenBackend(token) {
 }
 
 export async function fetchFromAPI(url, is_freelancer=false) {
-    if (is_freelancer) {
-        axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL + "freelancers/"
-    }
-
-    axios.defaults.headers.common["Authorization"] = `Bearer ${cookies().get("session").value}`
+    const client = addAuthToken(is_freelancer ? freelancerApiClient : adminApiClient);
+    
     try {
-        const res = await axios.get(url);
-
+        const res = await client.get(url);
         return res.data.data;
     } catch (error) {
         console.error("API call error:", error.response?.data);
@@ -36,17 +56,17 @@ export async function fetchFromAPI(url, is_freelancer=false) {
 }
 
 export async function postDataToAPI(url, data, sendingFile = false, is_freelancer = false) {
+    const client = addAuthToken(is_freelancer ? freelancerApiClient : adminApiClient);
     
-    if (is_freelancer) {
-        axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL + "freelancers/"
-    }   
-
-    axios.defaults.headers.common["Authorization"] = `Bearer ${cookies().get("session").value}`
+    // Set content type for file uploads
     if (sendingFile) {
-        axios.defaults.headers.common["Content-Type"] = "multipart/form-data"
+        client.defaults.headers.common["Content-Type"] = "multipart/form-data";
+    } else {
+        client.defaults.headers.common["Content-Type"] = "application/json";
     }
+
     try {
-        const response = await axios.post(url, data);
+        const response = await client.post(url, data);
         if (response.data?.success === false) {
             throw new Error(response.data.message);
         }
