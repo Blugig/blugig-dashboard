@@ -19,7 +19,7 @@ export default function AllFreelancerJobs() {
         <Pagelayout title={"All Jobs"}>
             <DataTablePaginated
                 columns={JobDetailsFreelancerColumns}
-                dataUrl={"jobs"}
+                dataUrl={"freelancers/jobs"}
                 filters={filters}
                 isFreelancer={true}
                 // multiSelectAction={<MultiSelectButton />}

@@ -17,6 +17,7 @@ export default function AddAdminUsers() {
     const [email, setEmail] = useState("");
     const [selectedPermissions, setSelectedPermissions] = useState({});
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     function handleSwitchChange(code) {
         setSelectedPermissions((prevPermissions) => ({
@@ -31,20 +32,29 @@ export default function AddAdminUsers() {
         );
 
         if (email && selectedCodes.length > 0) {
-            const res = await postDataToAPI('/create-admin', {
-                name: email.split('@')[0],
-                email,
-                permissions: selectedCodes,
-                is_super_admin: isSuperAdmin
-            });
-
-            if (res?.id) {
-                toast("A mail has been sent to the user with credentials.");
-                router.back();
-            } else {
-                toast("Error", {
-                    description: res?.message || "Failed to add user.",
+            setIsLoading(true);
+            try {
+                const res = await postDataToAPI('/create-admin', {
+                    name: email.split('@')[0],
+                    email,
+                    permissions: selectedCodes,
+                    is_super_admin: isSuperAdmin
                 });
+
+                if (res?.id) {
+                    toast("A mail has been sent to the user with credentials.");
+                    router.back();
+                } else {
+                    toast("Error", {
+                        description: res?.message || "Failed to add user.",
+                    });
+                }
+            } catch (error) {
+                toast("Error", {
+                    description: "Failed to add user. Please try again.",
+                });
+            } finally {
+                setIsLoading(false);
             }
         } else {
             toast("Error Occurred", {
@@ -61,8 +71,11 @@ export default function AddAdminUsers() {
                     placeholder="user@blugig.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
                 />
-                <Button onClick={handleSubmit}>Add User</Button>
+                <Button onClick={handleSubmit} disabled={isLoading}>
+                    {isLoading ? "Adding..." : "Add User"}
+                </Button>
             </div>
 
             <div className="w-full flex flex-col space-y-8">

@@ -9,16 +9,10 @@ axios.defaults.headers.common["Content-Type"] = 'application/json'
 // Create reusable API clients
 export const adminApiClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL + "admin/",
-    headers: {
-        "Content-Type": "application/json"
-    }
 });
 
 export const freelancerApiClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
-    headers: {
-        "Content-Type": "application/json"
-    }
 });
 
 // Helper function to add auth token to client
@@ -58,7 +52,7 @@ export async function fetchFromAPI(url, is_freelancer=false) {
 export async function postDataToAPI(url, data, sendingFile = false, is_freelancer = false) {
     const client = addAuthToken(is_freelancer ? freelancerApiClient : adminApiClient);
     
-    // Set content type for file uploads
+    // For file uploads, don't set Content-Type manually - let the browser set it with boundary
     if (sendingFile) {
         client.defaults.headers.common["Content-Type"] = "multipart/form-data";
     } else {

@@ -54,7 +54,7 @@ const formSchema = z.object({
     deliverables: z.string().optional(),
 })
 
-export function CreateOffer({ uid, sendOfferMessage, offer = null }) {
+export function CreateOffer({ uid, sendOfferMessage, jobId }) {
     const [open, setOpen] = useState(false)
     
     const form = useForm({
@@ -84,18 +84,15 @@ export function CreateOffer({ uid, sendOfferMessage, offer = null }) {
             total_cost: values.total_cost ? parseInt(values.total_cost) : null,
             deliverables: values.deliverables.split(","),
             user_id: uid,
-            ...(offer && { offerId: offer.id })
+            jobId
         };
 
         const res = await postDataToAPI(endpoint, payload);
 
         if (res) {
-            toast.success(offer ? "Offer updated successfully" : "Offer created successfully");
+            toast.success("Offer created successfully");
             form.reset();
-
-            if (!offer) {
-                sendOfferMessage(res);
-            }
+            sendOfferMessage(res);
             setOpen(false);
         }
     }
@@ -272,7 +269,7 @@ export function CreateOffer({ uid, sendOfferMessage, offer = null }) {
                             
                             <DialogFooter className="flex-shrink-0 sticky bottom-0 bg-white pt-4 border-t">
                                 <Button type="submit" className="w-full md:w-auto">
-                                    {offer ? "Update Offer" : "Create Offer"}
+                                    Create Offer
                                 </Button>
                             </DialogFooter>
                         </form>

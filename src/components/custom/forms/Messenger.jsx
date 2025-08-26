@@ -1,13 +1,5 @@
 "use client";
 
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
 import { ChatBubble, ChatBubbleMessage, ChatBubbleTimestamp } from "@/components/ui/chat/chat-bubble";
 import { ChatInput } from "@/components/ui/chat/chat-input";
@@ -21,9 +13,9 @@ import { postDataToAPI } from "@/lib/api";
 import { Newspaper } from "lucide-react";
 import { CreateOffer } from "./CreateOffer";
 
-export default function Messenger({ uid, conversationId, messages, setMessages, session }) {
+export default function Messenger({ uid, conversationId, messages, setMessages, session, jobId }) {
 
-    const { profile, refreshProfile } = useProfileStore();
+    const { profile, refreshProfile, is_internal_admin, is_freelancer } = useProfileStore();
 
     const [newMessage, setNewMessage] = useState("");
     const socketRef = useRef(null);
@@ -83,19 +75,23 @@ export default function Messenger({ uid, conversationId, messages, setMessages, 
 
         const message = {
             conversation_id: conversationId,
-            sender_id: profile?.id, // or current user's ID
             body: newMessage,
-            sender_role: "admin",
             message_type: "TEXT"
         };
 
         socketRef.current.emit("send_message", message);
 
-        // Add the sent message to the local state
-        message.time = new Date();
-        message.sender_admin_id = true;
-        message.id = Date.now();
-        setMessages((prev) => [...prev, message])
+        // Add the sent message to the local state with correct sender flags
+        const localMessage = {
+            ...message,
+            time: new Date(),
+            id: Date.now(),
+            // Set sender flags based on user role
+            sender_admin_id: is_internal_admin ? profile?.id : null,
+            sender_freelancer_id: is_freelancer ? profile?.id : null,
+            sender_user_id: (!is_internal_admin && !is_freelancer) ? profile?.id : null
+        };
+        setMessages((prev) => [...prev, localMessage]);
 
         setNewMessage("");
     };
@@ -123,20 +119,25 @@ export default function Messenger({ uid, conversationId, messages, setMessages, 
 
             const message = {
                 conversation_id: conversationId,
-                sender_id: profile?.id,
                 body: null,
                 media_url: url,
                 media_type,
-                sender_role: "admin",
                 message_type: "MEDIA"
             };
 
             socketRef.current.emit("send_message", message);
 
-            message.time = new Date();
-            message.sender_admin_id = true;
-            message.id = Date.now();
-            setMessages((prev) => [...prev, message]);
+            // Add the sent message to the local state with correct sender flags
+            const localMessage = {
+                ...message,
+                time: new Date(),
+                id: Date.now(),
+                // Set sender flags based on user role
+                sender_admin_id: is_internal_admin ? profile?.id : null,
+                sender_freelancer_id: is_freelancer ? profile?.id : null,
+                sender_user_id: (!is_internal_admin && !is_freelancer) ? profile?.id : null
+            };
+            setMessages((prev) => [...prev, localMessage]);
         } catch (err) {
             console.error(err);
             alert("Failed to upload file.");
@@ -148,8 +149,6 @@ export default function Messenger({ uid, conversationId, messages, setMessages, 
     const handleSendOffer = async (offer) => {
         const message = {
             conversation_id: conversationId,
-            sender_id: profile?.id,
-            sender_role: "admin",
             body: null,
             offer_id: offer.id,
             message_type: "OFFER"
@@ -157,215 +156,249 @@ export default function Messenger({ uid, conversationId, messages, setMessages, 
 
         socketRef.current.emit("send_message", message);
 
-        // Add the sent message to the local state
-        message.time = new Date();
-        message.sender_admin_id = true;
-        message.id = Date.now();
-        message.offer = offer;
-        setMessages((prev) => [...prev, message])
+        // Add the sent message to the local state with correct sender flags
+        const localMessage = {
+            ...message,
+            time: new Date(),
+            id: Date.now(),
+            offer: offer,
+            // Set sender flags based on user role
+            sender_admin_id: is_internal_admin ? profile?.id : null,
+            sender_freelancer_id: is_freelancer ? profile?.id : null,
+            sender_user_id: (!is_internal_admin && !is_freelancer) ? profile?.id : null
+        };
+        setMessages((prev) => [...prev, localMessage]);
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Conversation</CardTitle>
-                <CardDescription>Real-time messaging interface for user communication</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ChatMessageList
-                    className="w-full h-full max-h-[400px] overflow-y-auto"
-                >
-                    {messages.map(message => (
-                        <ChatBubble
-                            key={message.id}
-                            variant={message?.sender_admin_id ? "sent" : "received"}
-                        >
-                            <ChatBubbleMessage variant={message?.sender_admin_id ? "sent" : "received"}>
-                                {message.message_type === "MEDIA" && (
-                                    <div className="media-container">
-                                        {message.media_type.startsWith('image/') ? (
-                                            <div className="relative group">
-                                                <img
-                                                    src={message.media_url}
-                                                    alt="Shared image"
-                                                    className="w-full max-w-[350px] md:max-w-[450px] lg:max-w-[500px] rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200"
-                                                    onClick={() => window.open(message.media_url, '_blank')}
-                                                />
-                                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-xl transition-all duration-200 flex items-center justify-center">
-                                                    <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-medium bg-black bg-opacity-50 px-3 py-1 rounded-full transition-opacity duration-200">
-                                                        Click to view full size
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ) : message.media_type.startsWith('video/') ? (
-                                            <div className="relative">
-                                                <video
-                                                    controls
-                                                    className="w-full max-w-[350px] md:max-w-[450px] lg:max-w-[500px] rounded-xl shadow-md border border-gray-200"
-                                                    preload="metadata"
-                                                >
-                                                    <source src={message.media_url} type={message.media_type} />
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                            </div>
-                                        ) : message.media_type === 'application/pdf' ? (
-                                            <div className="bg-red-50 border border-red-200 rounded-xl p-4 max-w-[350px] md:max-w-[450px] lg:max-w-[500px]">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-red-100 p-2 rounded-lg">
-                                                        <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="font-medium text-gray-900">PDF Document</p>
-                                                        <p className="text-sm text-gray-600">Click to view or download</p>
-                                                    </div>
-                                                    <button
+        <div className="flex flex-col h-full">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-hidden">
+                <ChatMessageList className="h-full p-4 overflow-y-auto space-y-4">
+                    {messages.map(message => {
+                        // Determine if this message is from the current user
+                        const isCurrentUserMessage = 
+                            (is_internal_admin && message.sender_admin_id === profile?.id) ||
+                            (is_freelancer && message.sender_freelancer_id === profile?.id) ||
+                            (!is_internal_admin && !is_freelancer && message.sender_user_id === profile?.id);
+                        
+                        return (
+                            <div
+                                key={message.id}
+                                className={`flex ${isCurrentUserMessage ? "justify-end" : "justify-start"}`}
+                            >
+                                <div className={`max-w-[75%] ${isCurrentUserMessage ? "order-1" : "order-2"}`}>
+                                    <div
+                                        className={`rounded-2xl px-4 py-3 ${
+                                            isCurrentUserMessage
+                                                ? "bg-blue-500 text-white rounded-br-md"
+                                                : "bg-gray-100 text-gray-900 rounded-bl-md"
+                                        } shadow-sm`}
+                                    >
+                                    {message.message_type === "MEDIA" && (
+                                        <div className="media-container">
+                                            {message.media_type.startsWith('image/') ? (
+                                                <div className="relative group mb-2">
+                                                    <img
+                                                        src={message.media_url}
+                                                        alt="Shared image"
+                                                        className="w-full max-w-[250px] rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
                                                         onClick={() => window.open(message.media_url, '_blank')}
-                                                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium"
-                                                    >
-                                                        Open
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 max-w-[350px] md:max-w-[450px] lg:max-w-[500px]">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-gray-100 p-2 rounded-lg">
-                                                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
+                                                    />
+                                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-xl transition-all duration-200 flex items-center justify-center">
+                                                        <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium bg-black bg-opacity-70 px-3 py-1 rounded-full transition-opacity duration-200">
+                                                            Click to expand
+                                                        </span>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <p className="font-medium text-gray-900">File Attachment</p>
-                                                        <p className="text-sm text-gray-600">{message.media_type}</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => window.open(message.media_url, '_blank')}
-                                                        className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
+                                                </div>
+                                            ) : message.media_type.startsWith('video/') ? (
+                                                <div className="relative mb-2">
+                                                    <video
+                                                        controls
+                                                        className="w-full max-w-[250px] rounded-xl shadow-sm"
+                                                        preload="metadata"
                                                     >
-                                                        Open
-                                                    </button>
+                                                        <source src={message.media_url} type={message.media_type} />
+                                                        Your browser does not support the video tag.
+                                                    </video>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {message.body && (
-                                            <p className="mt-3 text-gray-700 bg-gray-50 p-3 rounded-lg border-l-4 border-blue-500">{message.body}</p>
-                                        )}
-                                    </div>
-                                )}
-                                {message.message_type === "TEXT" && message.body}
-                                {message.message_type === "OFFER" && message.offer && (
-                                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 max-w-sm shadow-lg">
-                                        {/* Header */}
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="bg-blue-100 p-2 rounded-lg">
-                                                <Newspaper className="w-5 h-5 text-blue-600" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-lg text-gray-900">Project Offer</h3>
-                                                <p className="text-sm text-blue-600 font-medium">{message.offer.name}</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Project Details Grid */}
-                                        <div className="space-y-3 mb-5">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-gray-600 font-medium">Duration:</span>
-                                                <span className="text-gray-900 font-semibold">{message.offer.timeline}</span>
-                                            </div>
-                                            
-                                            {message.offer.budget && (
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-600 font-medium">Rate:</span>
-                                                    <span className="text-gray-900 font-semibold">${message.offer.budget}/hour</span>
+                                            ) : message.media_type === 'application/pdf' ? (
+                                                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-3 mb-2 max-w-[250px]">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-red-500/20 p-2 rounded-lg">
+                                                            <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="font-medium text-sm">PDF Document</p>
+                                                            <button
+                                                                onClick={() => window.open(message.media_url, '_blank')}
+                                                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors duration-200 mt-1"
+                                                            >
+                                                                Open PDF
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            )}
-                                            
-                                            {message.offer.estimated_hours && (
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-600 font-medium">Est. Hours:</span>
-                                                    <span className="text-gray-900 font-semibold">{message.offer.estimated_hours} hrs</span>
-                                                </div>
-                                            )}
-                                            
-                                            {message.offer.total_cost && (
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-600 font-medium">Total:</span>
-                                                    <span className="text-blue-600 font-bold text-lg">${message.offer.total_cost.toLocaleString()}</span>
+                                            ) : (
+                                                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-3 mb-2 max-w-[250px]">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-gray-500/20 p-2 rounded-lg">
+                                                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="font-medium text-sm">File Attachment</p>
+                                                            <button
+                                                                onClick={() => window.open(message.media_url, '_blank')}
+                                                                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors duration-200 mt-1"
+                                                            >
+                                                                Download
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             )}
+                                            {message.body && (
+                                                <p className="text-sm leading-relaxed">{message.body}</p>
+                                            )}
                                         </div>
-
-                                        {/* Deliverables Section */}
-                                        {message.offer.deliverables && (
-                                            <div>
-                                                <h4 className="font-semibold text-gray-900 mb-3">Deliverables:</h4>
-                                                <ul className="space-y-2">
-                                                    {message.offer.deliverables.split(',').map((deliverable, index) => (
-                                                        <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
-                                                            <span className="text-blue-500 mt-1">•</span>
-                                                            <span>{deliverable.trim()}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
+                                    )}
+                                    {message.message_type === "TEXT" && (
+                                        <p className="text-sm leading-relaxed break-words">{message.body}</p>
+                                    )}
+                                    {message.message_type === "OFFER" && message.offer && (
+                                        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 rounded-xl p-4 shadow-sm max-w-[300px]">
+                                            {/* Header */}
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="bg-blue-500 p-2 rounded-lg shadow-sm">
+                                                    <Newspaper className="w-4 h-4 text-white" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-sm text-gray-900">Project Offer</h3>
+                                                    <p className="text-xs text-blue-600 font-medium">{message.offer.name}</p>
+                                                </div>
                                             </div>
-                                        )}
 
-                                        {/* Status Badge */}
-                                        <div className="mt-4 pt-4 border-t border-blue-200">
-                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                {message.offer.status || 'Pending'}
-                                            </span>
+                                            {/* Project Details */}
+                                            <div className="space-y-3 mb-4">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-600 text-xs font-medium">Duration:</span>
+                                                    <span className="text-gray-900 font-semibold text-xs bg-gray-200 px-2 py-1 rounded-md">{message.offer.timeline}</span>
+                                                </div>
+                                                
+                                                {message.offer.budget && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-gray-600 text-xs font-medium">Rate:</span>
+                                                        <span className="text-gray-900 font-semibold text-xs bg-green-100 text-green-800 px-2 py-1 rounded-md">${message.offer.budget}/hr</span>
+                                                    </div>
+                                                )}
+                                                
+                                                {message.offer.total_cost && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-gray-600 text-xs font-medium">Total:</span>
+                                                        <span className="text-blue-600 font-bold text-sm bg-blue-100 px-2 py-1 rounded-md">${message.offer.total_cost.toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Status */}
+                                            <div className="pt-3 border-t border-blue-200">
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 shadow-sm">
+                                                    {message.offer.status || 'Pending'}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </ChatBubbleMessage>
-                            <ChatBubbleTimestamp timestamp={new Date(message.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} />
-                        </ChatBubble>
-                    ))}
+                                    )}
+                                </div>
+                                <div className={`flex items-center gap-2 mt-1 ${isCurrentUserMessage ? "justify-end" : "justify-start"}`}>
+                                    <span className="text-xs text-gray-500">
+                                        {new Date(message.time).toLocaleTimeString('en-US', { 
+                                            hour: 'numeric', 
+                                            minute: '2-digit', 
+                                            hour12: true 
+                                        })}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        );
+                    })}
 
                     {messages.length === 0 && (
-                        <span className="w-full text-center text-slate-400">No conversation exists. Start one to begin messaging.</span>
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.697-.413l-2.28 1.014A1 1 0 017 19.586l1.087-2.451A8.002 8.002 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-sm font-medium text-gray-900 mb-1">No messages yet</h3>
+                                <p className="text-xs text-gray-500">Start the conversation by sending a message!</p>
+                            </div>
+                        </div>
                     )}
                 </ChatMessageList>
+            </div>
 
-            </CardContent>
-            <CardFooter className="relative flex flex-col rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring p-2 m-4">
-                <ChatInput
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message here..."
-                    className="min-h-12 resize-none rounded-lg bg-background border-2 p-3 shadow-none focus-visible:ring-0"
-                />
-                <div className="w-full flex items-center justify-between p-3 pt-2">
-                    <CreateOffer 
-                        uid={uid}
-                        sendOfferMessage={handleSendOffer}
-                    />
-
-                    <label htmlFor="file-upload" className="cursor-pointer">
-                        <input
-                            id="file-upload"
-                            type="file"
-                            accept="image/*,video/*"
-                            onChange={handleFileUpload}
-                            className="hidden"
+            {/* Input Area */}
+            <div className="border-t bg-white p-4">
+                <div className="flex flex-col space-y-3">
+                    <div className="relative">
+                        <ChatInput
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder="Type your message..."
+                            className="min-h-12 resize-none rounded-2xl bg-gray-50 border-gray-200 border-2 p-4 pr-14 shadow-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 text-sm transition-all duration-200"
+                            style={{ resize: 'none' }}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendMessage();
+                                }
+                            }}
                         />
-                        <Button variant="outline" size="icon" asChild>
-                            <div>
-                                <Paperclip className="size-4" />
-                                <span className="sr-only">Attach file</span>
-                            </div>
+                        <Button 
+                            onClick={handleSendMessage} 
+                            size="sm" 
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-blue-500 hover:bg-blue-600 rounded-xl transition-colors duration-200 z-10"
+                            disabled={!newMessage.trim()}
+                        >
+                            <CornerDownLeft className="h-4 w-4" />
                         </Button>
-                    </label>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <CreateOffer 
+                                uid={uid}
+                                jobId={jobId}
+                                sendOfferMessage={handleSendOffer}
+                            />
 
-                    <Button onClick={handleSendMessage} size="sm" className="ml-auto gap-1.5">
-                        Send Message
-                        <CornerDownLeft className="size-3.5" />
-                    </Button>
+                            <label htmlFor={`file-upload-sidebar-${conversationId}`} className="cursor-pointer">
+                                <input
+                                    id={`file-upload-sidebar-${conversationId}`}
+                                    type="file"
+                                    accept="image/*,video/*,application/pdf"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                />
+                                <Button variant="outline" size="sm" className="h-9 px-3 bg-gray-50 hover:bg-gray-100 border-gray-200 rounded-xl transition-colors duration-200">
+                                    <Paperclip className="h-4 w-4 mr-2" />
+                                    <span className="text-xs font-medium">Attach</span>
+                                </Button>
+                            </label>
+                        </div>
+
+                        <div className="text-xs text-gray-500">
+                            Press Enter to send
+                        </div>
+                    </div>
                 </div>
-            </CardFooter>
-        </Card>
+            </div>
+        </div>
     )
 }

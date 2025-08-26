@@ -16,17 +16,22 @@ import { postDataToAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { getPermName } from "@/lib/constant";
 import Link from "next/link";
-import Messenger from "@/components/custom/forms/Messenger";
+import { MessageCircle } from "lucide-react";
+import ChatSidebar from "@/components/layout/ChatSidebar";
+import useProfileStore from "@/store/session.store";
 
 export default function FormDetails({ params }) {
 
     const { slug } = params;
+    const { is_super_admin } = useProfileStore();
     const [formId, formType] = slug.split("-");
 
     const [details, setDetails] = useState({});
     const [conversationId, setConversationId] = useState(null);
     const [messages, setMessages] = useState([]);
-    const [data, setData] = useState({})
+    const [data, setData] = useState({});
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     async function fetchData() {
         const res = await postDataToAPI(`get-form-details/`, {
@@ -48,14 +53,21 @@ export default function FormDetails({ params }) {
     }
 
     async function startConversation() {
-        const res = await postDataToAPI(`conversations/create`, {
-            userId: data?.user?.id,
-            formId: parseInt(formId),
-        });
+        setIsLoading(true);
+        try {
+            const res = await postDataToAPI(`conversations/create`, {
+                userId: data?.user?.id,
+                jobId: parseInt(data.job.id),
+            });
 
-        if (res) {
-            toast.success("Conversation started successfully");
-            fetchData(); // Refresh the page data after starting conversation
+            if (res) {
+                toast.success("Conversation started successfully");
+                fetchData(); // Refresh the page data after starting conversation
+            }
+        } catch (error) {
+            toast.error("Failed to start conversation");
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -72,7 +84,7 @@ export default function FormDetails({ params }) {
                     <CardDescription>Forms details which the user filled and converstaion</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    <Link href={'/dashboard/users/' + data?.user?.id} className="block">
+                    <Link href={'/dashboard/users/' + data?.user?.id} className="block text-blue-400">
                         <Info
                             title={"User"}
                             value={data?.user?.name}
@@ -93,22 +105,34 @@ export default function FormDetails({ params }) {
                         );
                     })}
                 </CardContent>
-                {!conversationId && (
+                {!conversationId && !is_super_admin && (
                     <CardFooter className="flex justify-center sm:justify-start">
-                        <Button onClick={startConversation}>Start a Conversation</Button>
+                        <Button onClick={startConversation} disabled={isLoading}>
+                            {isLoading ? "Starting..." : "Start a Conversation"}
+                        </Button>
+                    </CardFooter>
+                )}
+                {conversationId && (
+                    <CardFooter className="flex justify-center sm:justify-start">
+                        <Button onClick={() => setIsChatOpen(true)} className="gap-2">
+                            <MessageCircle className="h-4 w-4" />
+                            Open Chat
+                        </Button>
                     </CardFooter>
                 )}
             </Card>
 
-            {conversationId && (
-                <Messenger
-                    uid={data?.user?.id}
-                    conversationId={conversationId}
-                    messages={messages}
-                    setMessages={setMessages}
-                    session={data.session}
-                />
-            )}
+            <ChatSidebar
+                isOpen={isChatOpen}
+                onClose={() => setIsChatOpen(false)}
+                uid={data?.user?.id}
+                conversationId={conversationId}
+                messages={messages}
+                setMessages={setMessages}
+                session={data.session}
+                userName={data?.user?.name}
+                jobId={data.job.id}
+            />
         </Pagelayout>
     )
 }

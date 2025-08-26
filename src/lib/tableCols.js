@@ -13,7 +13,7 @@ const renderAttachment = ({ row }) => {
     if (!attachment) return <div>-</div>;
 
     return (
-        <Link href={attachment} target="_blank">
+        <Link href={attachment} target="_blank" className="text-blue-500">
             {attachmentType?.startsWith('image/') ? (
                 <img src={attachment} width={200} height={200} alt="Attachment" />
             ) : (
@@ -22,6 +22,76 @@ const renderAttachment = ({ row }) => {
         </Link>
     )
 }
+
+export const JobParticipantsColumns = [
+    {
+        accessorKey: "id",
+        header: "User ID",
+        cell: ({ row }) => <div className="text-blue-500">{row.getValue("id")}</div>,
+    },
+    {
+        accessorKey: "name",
+        header: "User Name",
+        cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+    },
+    {
+        accessorKey: "email",
+        header: "Email",
+        cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("email")}</div>,
+    },
+    {
+        accessorKey: "user_type",
+        header: "User Type",
+        cell: ({ row }) => {
+            const userType = row.getValue("user_type");
+            return (
+                <Badge variant={userType === 'admin' ? 'default' : 'secondary'}>
+                    {userType === 'admin' ? 'Admin' : userType === 'freelancer' ? 'Freelancer' : 'User'}
+                </Badge>
+            );
+        },
+    },
+    {
+        accessorKey: "offers_count",
+        header: "Offers Made",
+        cell: ({ row }) => {
+            const count = row.getValue("offers_count");
+            return (
+                <div className="text-center">
+                    <span className={cn(
+                        "px-2 py-1 rounded-full text-sm font-medium",
+                        count > 0 
+                            ? "bg-green-100 text-green-800" 
+                            : "bg-gray-100 text-gray-600"
+                    )}>
+                        {count}
+                    </span>
+                </div>
+            );
+        },
+    },
+    {
+        id: "action",
+        header: "Action",
+        cell: ({ row }) => {
+            const userType = row.getValue("user_type");
+            const userId = row.getValue("id");
+            
+            let route = "#";
+            if (userType === 'admin') {
+                route = `/management/permissions`;
+            } else if (userType === 'freelancer') {
+                route = `/dashboard/freelancers/${userId}`;
+            }
+            
+            return (
+                <Link href={route} className="text-blue-500 hover:underline">
+                    View Profile
+                </Link>
+            );
+        },
+    },
+];
 
 export const UserDetailsColumns = [
     {
@@ -446,23 +516,32 @@ export const JobDetailsColumns = [
         header: "Awarded To",
         cell: ({ row }) => {
             const userType = row.getValue("awarded_to_user_type");
-            return userType ? <Badge variant="outline">{userType}</Badge> : <span>Not Awarded</span>;
-        },
-    },
-    {
-        accessorKey: "awarded_admin",
-        header: "Awarded Admin",
-        cell: ({ row }) => {
             const admin = row.getValue("awarded_admin");
-            return admin ? admin.name : "-";
-        },
-    },
-    {
-        accessorKey: "awarded_freelancer",
-        header: "Awarded Freelancer",
-        cell: ({ row }) => {
             const freelancer = row.getValue("awarded_freelancer");
-            return freelancer ? freelancer.name : "-";
+            
+            if (!userType) {
+                return <span>Not Awarded</span>;
+            }
+            
+            if (userType === "admin" && admin) {
+                return (
+                    <div className="flex flex-col">
+                        <Badge variant="outline">{userType}</Badge>
+                        <span className="text-sm text-muted-foreground mt-1">{admin.name}</span>
+                    </div>
+                );
+            }
+            
+            if (userType === "freelancer" && freelancer) {
+                return (
+                    <div className="flex flex-col">
+                        <Badge variant="outline">{userType}</Badge>
+                        <span className="text-sm text-muted-foreground mt-1">{freelancer.name}</span>
+                    </div>
+                );
+            }
+            
+            return <Badge variant="outline">{userType}</Badge>;
         },
     },
     {

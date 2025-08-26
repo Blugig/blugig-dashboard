@@ -119,9 +119,9 @@ export default function SideBar() {
         {
             title: "Jobs",
             routes: [
-                { title: "All Jobs", url: "/jobs", icon: ListChecks, permission: "ALL" },
-                { title: "Awarded Jobs", url: "/jobs/awarded", icon: BadgeCheck, permission: "ALL" },
-                { title: "Pending Jobs", url: "/jobs/pending", icon: Clock, permission: "ALL" },
+                { title: "All Jobs", url: "/jobs", icon: ListChecks, permission: "FREELANCER" },
+                { title: "My Awarded Jobs", url: "/jobs/awarded", icon: BadgeCheck, permission: "FREELANCER" },
+                { title: "My Pending Jobs", url: "/jobs/pending", icon: Clock, permission: "FREELANCER" },
             ],
         },
         {
