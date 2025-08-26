@@ -57,7 +57,7 @@ export default function FormDetails({ params }) {
         try {
             const res = await postDataToAPI(`conversations/create`, {
                 userId: data?.user?.id,
-                jobId: parseInt(data.job.id),
+                jobId: parseInt(data?.job?.id),
             });
 
             if (res) {
@@ -129,9 +129,9 @@ export default function FormDetails({ params }) {
                 conversationId={conversationId}
                 messages={messages}
                 setMessages={setMessages}
-                session={data.session}
+                session={data?.session}
                 userName={data?.user?.name}
-                jobId={data.job.id}
+                jobId={data?.job?.id}
             />
         </Pagelayout>
     )
