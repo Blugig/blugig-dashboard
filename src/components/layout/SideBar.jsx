@@ -117,7 +117,7 @@ export default function SideBar() {
             ],
         },
         {
-            title: "Jobs",
+            title: "Jobs", // for freelancer only
             routes: [
                 { title: "All Jobs", url: "/jobs", icon: ListChecks, permission: "FREELANCER" },
                 { title: "My Awarded Jobs", url: "/jobs/awarded", icon: BadgeCheck, permission: "FREELANCER" },

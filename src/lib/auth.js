@@ -6,7 +6,6 @@ import { jwtDecode } from "jwt-decode";
 import { NextResponse } from "next/server";
 import { freelancerApiClient } from "./api";
 
-// axios.defaults.baseURL = "http://127.0.0.1:8000/v1/admin/"
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL
 
 export async function freelanceLogin(formData) {
@@ -47,6 +46,8 @@ export async function login(formData) {
                 perms.push("SUPER")
             }
 
+            perms.push("ADMIN");
+
             const encoded_perms = btoa(JSON.stringify(perms))
 
             const decodedToken = jwtDecode(accessToken);
@@ -71,36 +72,87 @@ export async function logout() {
 }
 
 export async function verifySession(request) {
-    const session = request.cookies.get('session')?.value
-    const sessperms = request.cookies.get('sessperms')?.value
+    // 1. Get current context: hostname, path, and session cookies
+    const { pathname } = request.nextUrl;
+    const hostname = request.headers.get("host");
+    const session = request.cookies.get('session')?.value;
+    const sessperms = request.cookies.get('sessperms')?.value;
 
-    if (session && request.nextUrl.pathname.includes('/login')) {
-        return NextResponse.redirect(new URL('/', request.url))
+    // 2. Define your hostnames from environment variables
+    const adminHost = process.env.NEXT_PUBLIC_ADMIN_HOST || "admin.localhost:3000";
+    const freelancerHost = process.env.NEXT_PUBLIC_FREELANCER_HOST || "freelancer.localhost:3000";
+
+    const isFreelancerPortal = hostname === freelancerHost;
+    const isAdminPortal = hostname === adminHost;
+
+    // --- HANDLE UNAUTHENTICATED USERS ---
+    if (!session) {
+        if (isAdminPortal && !pathname.startsWith('/admin/login')) {
+            // If on admin portal and not logged in, force redirect to admin login
+            return NextResponse.redirect(new URL('/admin/login', request.url));
+        }
+        if (isFreelancerPortal && !pathname.startsWith('/login')) {
+            // If on freelancer portal and not logged in, force redirect to freelancer login
+            return NextResponse.redirect(new URL('/login', request.url));
+        }
+        // For other cases (like main domain), use default login logic
+        if (!pathname.includes('/login')) {
+            return NextResponse.redirect(new URL('/login', request.url));
+        }
+        return NextResponse.next();
     }
 
-    if (!session && !request.nextUrl.pathname.includes('/login')) {
-        return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    // Route-based access control for authenticated users
-    if (session && sessperms) {
+    // --- HANDLE AUTHENTICATED USERS ---
+    // At this point, the user has a session cookie.
+    
+    // A. Parse user permissions from the cookie
+    let userPermissions = [];
+    if (sessperms) {
         try {
-            const userPermissions = JSON.parse(atob(sessperms))
-            const pathname = request.nextUrl.pathname
-
-            // Check if user has only FREELANCER permission (no admin permissions)
-            if (userPermissions.includes('FREELANCER') && !userPermissions.includes('SUPER') && userPermissions.length === 1) {
-                // Check if the current path is allowed for freelancers
-                const isAllowed = pathname === '/' || pathname.startsWith('/jobs')
-
-                if (!isAllowed) {
-                    return NextResponse.redirect(new URL('/', request.url))
-                }
-            }
+            userPermissions = JSON.parse(atob(sessperms));
         } catch (error) {
-            console.error('Error parsing user permissions:', error)
+            console.error('Error parsing user permissions:', error);
+            // If permissions are invalid, redirect to a safe login page
+            const logoutUrl = isFreelancerPortal ? '/login' : '/admin/login';
+            return NextResponse.redirect(new URL(logoutUrl, request.url));
         }
     }
+
+    const isSuperUser = userPermissions.includes('ADMIN');
+    const isFreelancerUser = userPermissions.includes('FREELANCER');
+
+    // B. Enforce portal access: Ensure the user's role matches the portal
+    // THIS IS THE KEY LOGIC TO PREVENT FREELANCERS FROM ACCESSING ADMIN AREAS
+    if (isAdminPortal && !isSuperUser) {
+        // A user without SUPER permissions is on the admin portal.
+        // Redirect them away to the freelancer portal.
+        return NextResponse.redirect(`http://${freelancerHost}`);
+    }
+
+    if (isFreelancerPortal && !isFreelancerUser) {
+        // An admin or other non-freelancer is on the freelancer portal.
+        // Redirect them to the admin portal.
+        return NextResponse.redirect(`http://${adminHost}/dashboard`);
+    }
+
+    // C. If user is logged in, redirect away from any login page
+    if (pathname.includes('/login')) {
+        return NextResponse.redirect(new URL('/', request.url));
+    }
+    
+    // D. Enforce route-level access within the correct portal
+    if (isFreelancerPortal && isFreelancerUser) {
+        // Only allow access to profile ('/'), jobs, and forms for freelancers.
+        const isAllowed = pathname === '/' || pathname.startsWith('/jobs') || pathname.startsWith('/forms');
+        
+        if (!isAllowed) {
+            // Redirect to a safe default page for freelancers if they access an invalid URL.
+            return NextResponse.redirect(new URL('/jobs', request.url));
+        }
+    }
+
+    // If all checks pass, allow the request to proceed
+    return NextResponse.next();
 }
 
 export async function getRoutes() {
