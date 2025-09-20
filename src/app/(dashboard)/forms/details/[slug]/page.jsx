@@ -2,6 +2,7 @@
 
 import Info from "@/components/custom/Info";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import {
     Card,
     CardContent,
@@ -16,9 +17,10 @@ import { postDataToAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { getPermName } from "@/lib/constant";
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, TrendingUp } from "lucide-react";
 import ChatSidebar from "@/components/layout/ChatSidebar";
 import useProfileStore from "@/store/session.store";
+import UpdateJobProgress from "@/components/custom/jobs/UpdateJobProgress";
 
 export default function FormDetails({ params }) {
 
@@ -32,6 +34,20 @@ export default function FormDetails({ params }) {
     const [data, setData] = useState({});
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [jobProgress, setJobProgress] = useState(65); // Default progress value
+
+    async function handleProgressUpdate(newProgress) {
+        // This is where you would typically make an API call
+        // For now, just updating the local state and logging
+        console.log("Progress value selected:", newProgress);
+        setJobProgress(newProgress);
+
+        // TODO: Add API call here to save progress to backend
+        // const res = await postDataToAPI('update-job-progress', {
+        //     jobId: data?.job?.id,
+        //     progress: newProgress
+        // });
+    }
 
     async function fetchData() {
         const res = await postDataToAPI(`get-form-details/`, {
@@ -77,6 +93,12 @@ export default function FormDetails({ params }) {
 
     return (
         <Pagelayout title={"Form Details"}>
+            {/* Job Progress Display & Update - Combined */}
+            <UpdateJobProgress
+                currentProgress={jobProgress}
+                onProgressUpdate={handleProgressUpdate}
+            />
+
             {/* Form Details */}
             <Card className="mb-4">
                 <CardHeader>

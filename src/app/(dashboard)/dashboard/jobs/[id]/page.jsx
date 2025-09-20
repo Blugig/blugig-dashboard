@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import DataTable from "@/components/custom/DataTable";
 import { JobParticipantsColumns } from "@/lib/tableCols";
-import { Loader2, Users, MessageSquare, FileText, Calendar, DollarSign, User, Mail, Phone } from "lucide-react";
+import { Loader2, Users, MessageSquare, FileText, Calendar, DollarSign, User, Mail, Phone, TrendingUp } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -150,6 +150,29 @@ export default function JobSuperAdminDetails() {
                                         </Badge>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            {/* Job Progress */}
+                            <div className="border-t pt-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                                        <TrendingUp className="h-3 w-3" />
+                                        Job Progress
+                                    </label>
+                                    <span className="text-sm font-medium">{job.progress}%</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                        style={{ width: `${job.progress}%` }}
+                                    ></div>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {job.progress < 30 ? 'Just started' : 
+                                     job.progress < 60 ? 'In progress' : 
+                                     job.progress < 90 ? 'Nearly complete' : 
+                                     'Almost finished'}
+                                </p>
                             </div>
                             
                             {job.form_submission && (

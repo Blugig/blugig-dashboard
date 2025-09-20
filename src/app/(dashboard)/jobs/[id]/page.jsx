@@ -20,11 +20,12 @@ import { MessageCircle, Calendar, User, Briefcase } from "lucide-react";
 import ChatSidebar from "@/components/layout/ChatSidebar";
 import { Badge } from "@/components/ui/badge";
 import useProfileStore from "@/store/session.store";
+import UpdateJobProgress from "@/components/custom/jobs/UpdateJobProgress";
 
 export default function JobFreelancerDetails({ params }) {
 
     const { id } = params;
-    const { is_freelancer } = useProfileStore();
+    const { is_freelancer, profile } = useProfileStore();
 
     const [details, setDetails] = useState({});
     const [conversationId, setConversationId] = useState(null);
@@ -45,7 +46,7 @@ export default function JobFreelancerDetails({ params }) {
                 console.log(res);
                 setData(res);
                 setDetails(res.details || {});
-                
+
                 if (res.conversation) {
                     setConversationId(res.conversation.id);
                     setMessages(res.conversation.messages || []);
@@ -74,6 +75,22 @@ export default function JobFreelancerDetails({ params }) {
             toast.error("Failed to start conversation");
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    async function updateProgress(progress) {
+        try {
+            const res = await postDataToAPI(`update-job-progress`, {
+                progress,
+                jobId: parseInt(data?.job?.id),
+            });
+    
+            if (res) {
+                toast.success("Job progress updated successfully");
+                fetchDetails(); // Refresh the page data after updating progress
+            }
+        } catch (error) {
+            toast.error("Failed to update job progress");
         }
     }
 
@@ -137,7 +154,7 @@ export default function JobFreelancerDetails({ params }) {
                     <CardTitle className="flex items-center gap-2">
                         <User className="h-5 w-5 text-blue-500" />
 
-                        Client & {data.formType ? getPermName(data.formType) : 'Project'} Details
+                        Client Details
                     </CardTitle>
                     <CardDescription>Information about the client and project requirements</CardDescription>
                 </CardHeader>
@@ -180,7 +197,7 @@ export default function JobFreelancerDetails({ params }) {
                         );
                     })}
                 </CardContent>
-                
+
                 {/* Action Buttons */}
                 <CardFooter className="flex justify-start gap-3 pt-6 border-t">
                     {!conversationId && is_freelancer ? (
@@ -207,6 +224,14 @@ export default function JobFreelancerDetails({ params }) {
                 session={data.session}
                 userName={data?.client?.name}
             />
+
+            {/* Show to awarded freelancer only */}
+            {data?.job?.awarded_freelancer_id === profile?.id && (
+                <UpdateJobProgress
+                    currentProgress={data?.job?.progress}
+                    onProgressUpdate={updateProgress}
+                />
+            )}
         </Pagelayout>
     )
 }
