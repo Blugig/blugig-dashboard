@@ -65,7 +65,7 @@ export default function JobFreelancerDetails({ params }) {
             const res = await postDataToAPI(`conversations/create`, {
                 userId: data?.client?.id,
                 jobId: parseInt(id),
-            });
+            }, false, true);
 
             if (res) {
                 toast.success("Conversation started successfully");
@@ -80,10 +80,11 @@ export default function JobFreelancerDetails({ params }) {
 
     async function updateProgress(progress) {
         try {
-            const res = await postDataToAPI(`update-job-progress`, {
+            const res = await postDataToAPI(`freelancers/update-job-progress`, {
                 progress,
                 jobId: parseInt(data?.job?.id),
-            });
+            }, false, true);
+            console.log(res);
     
             if (res) {
                 toast.success("Job progress updated successfully");
@@ -226,7 +227,7 @@ export default function JobFreelancerDetails({ params }) {
             />
 
             {/* Show to awarded freelancer only */}
-            {data?.job?.awarded_freelancer_id === profile?.id && (
+            {data?.job?.job_type === 'awarded' && data?.job?.awarded_freelancer?.id === profile?.id && (
                 <UpdateJobProgress
                     currentProgress={data?.job?.progress}
                     onProgressUpdate={updateProgress}

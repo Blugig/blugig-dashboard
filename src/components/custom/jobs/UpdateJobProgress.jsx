@@ -22,10 +22,8 @@ export default function UpdateJobProgress({ currentProgress = 0, onProgressUpdat
             if (onProgressUpdate) {
                 await onProgressUpdate(progressValue);
             }
-
-            toast.success(`Progress updated to ${progressValue}%`);
         } catch (error) {
-            toast.error("Failed to update progress");
+            setIsUpdating(false);
         } finally {
             setIsUpdating(false);
         }

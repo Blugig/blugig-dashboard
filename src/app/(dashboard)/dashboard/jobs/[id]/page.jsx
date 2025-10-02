@@ -16,7 +16,7 @@ export default function JobSuperAdminDetails() {
     const params = useParams();
     const [jobData, setJobData] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+
     useEffect(() => {
         fetchJobDetails();
     }, [params.id]);
@@ -81,7 +81,7 @@ export default function JobSuperAdminDetails() {
                             </p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
@@ -96,7 +96,7 @@ export default function JobSuperAdminDetails() {
                             </p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
@@ -151,7 +151,7 @@ export default function JobSuperAdminDetails() {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Job Progress */}
                             <div className="border-t pt-4">
                                 <div className="flex items-center justify-between mb-2">
@@ -162,19 +162,19 @@ export default function JobSuperAdminDetails() {
                                     <span className="text-sm font-medium">{job.progress}%</span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div 
-                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                    <div
+                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                                         style={{ width: `${job.progress}%` }}
                                     ></div>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {job.progress < 30 ? 'Just started' : 
-                                     job.progress < 60 ? 'In progress' : 
-                                     job.progress < 90 ? 'Nearly complete' : 
-                                     'Almost finished'}
+                                    {job.progress < 30 ? 'Just started' :
+                                        job.progress < 60 ? 'In progress' :
+                                            job.progress < 90 ? 'Nearly complete' :
+                                                'Almost finished'}
                                 </p>
                             </div>
-                            
+
                             {job.form_submission && (
                                 <div className="border-t pt-4">
                                     <h4 className="font-medium mb-2">Form Details</h4>
@@ -248,29 +248,34 @@ export default function JobSuperAdminDetails() {
                                     </div>
                                 </>
                             )}
-                            
-                            {job.awarded_to_user_type && (
-                                <div className="border-t pt-4">
-                                    <h4 className="font-medium mb-2">Assignment Details</h4>
-                                    <div>
-                                        <label className="text-sm font-medium text-muted-foreground">Awarded To</label>
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="outline">{job.awarded_to_user_type}</Badge>
-                                            {job.awarded_admin && (
-                                                <span className="text-sm">({job.awarded_admin.name})</span>
-                                            )}
-                                            {job.awarded_freelancer && (
-                                                <span className="text-sm">({job.awarded_freelancer.name})</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {job.awarded_at && (
+
+                            {job?.job_type === 'awarded' && (
+                                <>
+                                    <CardTitle className="border-t pt-4 font-medium mb-2">Assignment Details</CardTitle>
+                                    <div className="pt-4 grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="text-sm font-medium text-muted-foreground">Awarded At</label>
-                                            <p className="text-sm">{formatDate(job.awarded_at)}</p>
+                                            <label className="text-sm font-medium text-muted-foreground">Awarded To</label>
+                                            <div className="flex items-center gap-2">
+                                                {job.awarded_admin && (
+                                                    <span className="text-sm">{job.awarded_admin.name}</span>
+                                                )}
+                                                {job.awarded_freelancer && (
+                                                    <span className="text-sm">{job.awarded_freelancer.name}</span>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
+                                        <div>
+                                            <label className="text-sm font-medium text-muted-foreground">Awarded To User Type</label>
+                                            <p className="text-sm"><Badge variant="outline">{job.awarded_to_user_type}</Badge></p>
+                                        </div>
+                                        {job.awarded_at && (
+                                            <div>
+                                                <label className="text-sm font-medium text-muted-foreground">Awarded At</label>
+                                                <p className="text-sm">{formatDate(job.awarded_at)}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
                             )}
                         </CardContent>
                     </Card>
@@ -285,9 +290,9 @@ export default function JobSuperAdminDetails() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <DataTable 
-                            columns={JobParticipantsColumns} 
-                            data={participants || []} 
+                        <DataTable
+                            columns={JobParticipantsColumns}
+                            data={participants || []}
                         />
                     </CardContent>
                 </Card>
