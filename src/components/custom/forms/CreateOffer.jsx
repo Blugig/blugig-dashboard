@@ -84,7 +84,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
             total_cost: values.total_cost ? parseInt(values.total_cost) : null,
             deliverables: values.deliverables.split(","),
             user_id: uid,
-            jobId
+            job_id: jobId
         };
 
         const res = await postDataToAPI(endpoint, payload);

@@ -43,7 +43,6 @@ export default function JobFreelancerDetails({ params }) {
             }, false, true);
 
             if (res) {
-                console.log(res);
                 setData(res);
                 setDetails(res.details || {});
 
@@ -65,7 +64,7 @@ export default function JobFreelancerDetails({ params }) {
             const res = await postDataToAPI(`conversations/create`, {
                 userId: data?.client?.id,
                 jobId: parseInt(id),
-            }, false, true);
+            });
 
             if (res) {
                 toast.success("Conversation started successfully");
@@ -224,6 +223,7 @@ export default function JobFreelancerDetails({ params }) {
                 setMessages={setMessages}
                 session={data.session}
                 userName={data?.client?.name}
+                jobId={data?.job?.id}
             />
 
             {/* Show to awarded freelancer only */}
