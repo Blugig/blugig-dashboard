@@ -90,10 +90,10 @@ function AllAdminUsersContent() {
         const perms_keys = Object.keys(values).filter(key => values[key]);
 
         try {
-            const res = await postDataToAPI("update-admin/", {
+            const res = await postDataToAPI("update-admin-perms", {
                 email,
                 permissions: perms_keys,
-            });
+            }, false, false);
 
             if (res || res.success) {
                 toast("Success", {

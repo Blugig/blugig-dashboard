@@ -25,7 +25,7 @@ import UpdateJobProgress from "@/components/custom/jobs/UpdateJobProgress";
 export default function FormDetails({ params }) {
 
     const { slug } = params;
-    const { is_super_admin } = useProfileStore();
+    const { is_super_admin, profile } = useProfileStore();
     const [formId, formType] = slug.split("-");
 
     const [details, setDetails] = useState({});
@@ -94,10 +94,13 @@ export default function FormDetails({ params }) {
     return (
         <Pagelayout title={"Form Details"}>
             {/* Job Progress Display & Update - Combined */}
-            <UpdateJobProgress
-                currentProgress={jobProgress}
-                onProgressUpdate={handleProgressUpdate}
-            />
+
+            {!is_super_admin && data?.job?.awarded_to_user_type === 'admin' && data?.job?.awarded_admin?.id === profile?.id && (
+                <UpdateJobProgress
+                    currentProgress={data?.job?.progress || 0}
+                    onProgressUpdate={handleProgressUpdate}
+                />
+            )}
 
             {/* Form Details */}
             <Card className="mb-4">

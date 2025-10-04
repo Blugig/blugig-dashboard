@@ -121,8 +121,6 @@ export default function MyProfile() {
         formData.append('profile_photo', profilePicture)
       }
 
-      console.log(formData);
-
       const res = await postDataToAPI('update-admin/', formData, true, false);
 
       if (res || res.success) {
