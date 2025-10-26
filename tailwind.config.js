@@ -21,6 +21,8 @@ module.exports = {
         primary: "#48ABB8",
         secondary: "#E4DCCF",
 
+        background: "#4950EA",
+
         success: "#A5D6A7",
         destructive: "#FF0000",
       },

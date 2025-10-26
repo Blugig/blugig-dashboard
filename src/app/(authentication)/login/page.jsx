@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import Image from "next/image";
 
 import {
     Form,
@@ -17,9 +18,10 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { freelanceLogin, login } from "@/lib/auth";
+import { freelanceLogin } from "@/lib/auth";
 import { toast } from "sonner";
 import useProfileStore from "@/store/session.store";
+import SupportedPlatforms from "@/components/SupportedPlatforms";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -64,42 +66,43 @@ export default function Login() {
     }
 
     return (
-        <div className="min-h-screen flex">
-            {/* Left Side - Login Form */}
-            <div className="flex-1 flex flex-col justify-center px-8 sm:px-16 lg:px-24">
-                <div className="max-w-md w-full mx-auto">
+        <section className="flex h-screen w-full items-stretch bg-white">
+            {/* Left form side */}
+            <main className="flex-1 h-full flex items-center justify-center px-8 sm:px-12 lg:px-16 py-8 bg-white overflow-y-auto">
+                <div className="w-full max-w-sm space-y-5">
                     {/* Logo */}
-                    <div className="flex items-center mb-8">
-                        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center mr-3">
-                            <span className="text-white font-bold text-sm">B</span>
-                        </div>
-                        <span className="text-xl font-semibold">Blugig</span>
+                    <div className="mb-6">
+                        <Image
+                            src="/logo-black.png"
+                            alt="Blugig Logo"
+                            width={100}
+                            height={32}
+                            className="h-8 w-auto"
+                        />
                     </div>
-                    
-                    {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-                            Freelancer Login
+
+                    <div>
+                        <h1 className="font-gilroy text-2xl font-semibold text-[#4950EA] leading-tight">
+                            Freelancer Sign In
                         </h1>
-                        <p className="text-sm text-gray-600">
-                            Sign in to manage your freelance projects and gigs
+                        <p className="text-gray-900 mt-3 text-sm leading-relaxed">
+                            Sign in to access projects and clients from across the globe
                         </p>
                     </div>
 
-                    {/* Login Form */}
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5">
                             <FormField
                                 control={form.control}
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-sm font-medium text-gray-700">Email*</FormLabel>
+                                        <FormLabel className="text-gray-900 text-xs font-normal">Email</FormLabel>
                                         <FormControl>
                                             <Input 
                                                 placeholder="Enter your email" 
-                                                className="h-11 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                                                {...field} 
+                                                {...field}
+                                                className="bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-lg h-10 text-sm"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -111,14 +114,14 @@ export default function Login() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-sm font-medium text-gray-700">Password*</FormLabel>
+                                        <FormLabel className="text-gray-900 text-xs font-normal">Password</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input
                                                     type={visible ? "text" : "password"}
                                                     placeholder="Enter your password"
-                                                    className="h-11 border-gray-300 focus:border-purple-500 focus:ring-purple-500 pr-10"
                                                     {...field}
+                                                    className="bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-lg h-10 text-sm pr-10"
                                                 />
                                                 <button
                                                     type="button"
@@ -135,7 +138,7 @@ export default function Login() {
                             />
                             <Button 
                                 type="submit" 
-                                className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium" 
+                                className="w-full bg-[#6366F1] hover:bg-[#5558E3] text-white rounded-lg h-11 text-sm font-medium mt-4"
                                 disabled={loading}
                             >
                                 {loading ? (
@@ -145,55 +148,66 @@ export default function Login() {
                                     </>
                                 ) : "Sign In"}
                             </Button>
+
+                            <p className="text-center text-sm text-gray-900 pt-1">
+                                Don't have an account?{" "}
+                                <a href="https://blugig.com/" className="text-background hover:underline font-semibold">
+                                    Sign Up Now
+                                </a>
+                            </p>
                         </form>
                     </Form>
-
-                    {/* Footer */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Don't have an account? <a href="https://blugig.com/" className="text-purple-600 hover:text-purple-700 cursor-pointer font-medium">Sign Up Now</a>
-                        </p>
-                    </div>
                 </div>
-            </div>
+            </main>
 
-            {/* Right Side - Marketing Content */}
-            <div className="hidden lg:flex flex-1 bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 relative overflow-hidden">
-                <div className="flex flex-col justify-center items-center p-12 text-white relative z-10">
-                    {/* Testimonial */}
-                    <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
-                        <p className="text-lg leading-relaxed mb-4">
-                            "Blugig is surprisingly handy for keeping all my business stuff in one place."
-                        </p>
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center mr-3">
-                                <span className="text-sm font-medium">DM</span>
+            {/* Right decorative side with background image */}
+            <aside className="hidden lg:flex w-[55%] h-full relative overflow-hidden">
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                    <Image
+                        src="/login-bg.png"
+                        alt=""
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                </div>
+
+                {/* Content overlay */}
+                <div className="relative z-10 flex flex-col p-12 text-white">
+                    <div className="flex-1 flex flex-col justify-center max-w-2xl">
+                        <h2 className="font-gilroy text-5xl leading-tight">
+                            Work with Global Clients. <br /> 
+                            Grow Without Limits.
+                        </h2>
+
+                        {/* Testimonial */}
+                        <div className="relative">
+
+                            <p className="text-white text-lg leading-relaxed mb-6 pt-8">
+                                Blugig connects me with clients worldwide and makes project management simple and seamless.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white/30">
+                                <Image
+                                    src="https://img.freepik.com/free-photo/portrait-white-man-isolated_53876-40306.jpg?semt=ais_hybrid&w=740&q=80"
+                                    alt="David Miller"
+                                    width={42}
+                                    height={42}
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                             <div>
-                                <div className="font-medium">David Miller</div>
-                                <div className="text-sm text-white/70">E-commerce Specialist</div>
+                                <p className="font-semibold text-white text-lg">David Miller</p>
+                                <p className="text-sm text-white/80">Freelance Consultant</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Growth Metrics */}
-                    <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6">
-                        <div className="text-sm text-white/70 mb-2">GROWTH</div>
-                        <div className="text-3xl font-bold mb-2">+21.35%</div>
-                        <div className="text-sm text-white/70 mb-3">last month</div>
-                        <p className="text-sm text-white/80">
-                            This significant increase in growth highlights the effectiveness of our recent strategies and continued advancement.
-                        </p>
-                    </div>
+                    <SupportedPlatforms />
                 </div>
-
-                {/* Background decorative elements */}
-                <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-20 right-20 w-32 h-32 bg-white rounded-full opacity-10"></div>
-                    <div className="absolute bottom-32 left-16 w-24 h-24 bg-white rounded-full opacity-10"></div>
-                    <div className="absolute top-1/2 right-40 w-16 h-16 bg-white rounded-full opacity-10"></div>
-                </div>
-            </div>
-        </div>
+            </aside>
+        </section>
     )
 }
