@@ -46,11 +46,10 @@ const formSchema = z.object({
     timeline: z.string({
         required_error: "Please select a timeline.",
     }),
-    budget: z.number().min(1, {
-        message: "Budget must be at least 1.",
-    }),
     estimated_hours: z.string().optional(),
-    total_cost: z.number().optional(),
+    total_cost: z.number().min(1, {
+        message: "Total cost must be at least 1.",
+    }),
     deliverables: z.string().optional(),
 })
 
@@ -63,7 +62,6 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
             name: "",
             description: "",
             timeline: "",
-            budget: 0,
             type: "general",
             estimated_hours: "",
             total_cost: 0,
@@ -78,10 +76,10 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
             name: values.name,
             description: values.description,
             timeline: values.timeline,
-            budget: values.budget,
+            budget: values.total_cost,
             type: values.type,
             estimated_hours: values.estimated_hours,
-            total_cost: values.total_cost ? parseInt(values.total_cost) : null,
+            total_cost: values.total_cost,
             deliverables: values.deliverables.split(","),
             user_id: uid,
             job_id: jobId
@@ -176,24 +174,6 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="budget"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Budget</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="Enter budget"
-                                                    {...field}
-                                                    onChange={event => field.onChange(Number(event.target.value))}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
                                     name="estimated_hours"
                                     render={({ field }) => (
                                         <FormItem>
@@ -218,7 +198,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                             <FormControl>
                                                 <Input
                                                     type="number"
-                                                    placeholder="Total cost (optional)"
+                                                    placeholder="Enter total cost"
                                                     {...field}
                                                     onChange={event => field.onChange(Number(event.target.value))}
                                                 />

@@ -378,18 +378,16 @@ export default function Messenger({ uid, conversationId, messages, setMessages, 
                                 sendOfferMessage={handleSendOffer}
                             />
 
-                            <label htmlFor={`file-upload-sidebar-${conversationId}`} className="cursor-pointer">
-                                <input
-                                    id={`file-upload-sidebar-${conversationId}`}
-                                    type="file"
-                                    accept="image/*,video/*,application/pdf"
-                                    onChange={handleFileUpload}
-                                    className="hidden"
-                                />
-                                <Button variant="outline" size="sm" className="h-9 px-3 bg-gray-50 hover:bg-gray-100 border-gray-200 rounded-xl transition-colors duration-200">
-                                    <Paperclip className="h-4 w-4 mr-2" />
-                                    <span className="text-xs font-medium">Attach</span>
-                                </Button>
+                            <input
+                                id="file-upload-messenger"
+                                type="file"
+                                accept="image/*,video/*,application/pdf"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                            />
+                            <label htmlFor="file-upload-messenger" className="cursor-pointer inline-flex items-center justify-center h-9 px-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors duration-200 text-sm font-medium">
+                                <Paperclip className="h-4 w-4 mr-2" />
+                                <span className="text-xs font-medium">Attach</span>
                             </label>
                         </div>
 

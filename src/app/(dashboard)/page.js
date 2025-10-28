@@ -52,8 +52,9 @@ export default function MyProfile() {
     },
   })
 
-  // Load profile data on mount
+  // Load profile data on mount (always), and gate UI until loaded
   useEffect(() => {
+    let mounted = true
     const loadProfile = async () => {
       setIsLoading(true)
       try {
@@ -61,14 +62,15 @@ export default function MyProfile() {
       } catch (error) {
         toast.error("Failed to load profile data")
       } finally {
-        setIsLoading(false)
+        if (mounted) setIsLoading(false)
       }
     }
 
-    if (!profile) {
-      loadProfile()
+    loadProfile()
+    return () => {
+      mounted = false
     }
-  }, [profile, refreshProfile])
+  }, [refreshProfile])
 
   // Update form when profile data is loaded
   useEffect(() => {
@@ -145,7 +147,7 @@ export default function MyProfile() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
-  if (isLoading) {
+  if (isLoading || !profile) {
     return (
       <Pagelayout title={"My Profile"}>
         <div className="max-w-7xl mx-auto space-y-6">

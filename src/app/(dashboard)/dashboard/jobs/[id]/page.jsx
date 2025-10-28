@@ -6,9 +6,10 @@ import Pagelayout from "@/components/layout/PageLayout";
 import { fetchFromAPI, postDataToAPI } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import DataTable from "@/components/custom/DataTable";
 import { JobParticipantsColumns } from "@/lib/tableCols";
-import { Loader2, Users, MessageSquare, FileText, Calendar, DollarSign, User, Mail, Phone, TrendingUp } from "lucide-react";
+import { Loader2, Users, MessageSquare, FileText, Calendar, DollarSign, User, Mail, Phone, TrendingUp, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ export default function JobSuperAdminDetails() {
     const params = useParams();
     const [jobData, setJobData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isMarkingAsExternal, setIsMarkingAsExternal] = useState(false);
 
     useEffect(() => {
         fetchJobDetails();
@@ -36,6 +38,27 @@ export default function JobSuperAdminDetails() {
             toast.error("Failed to fetch job details");
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function handleMarkAsExternal() {
+        if (!jobData?.job?.id) return;
+
+        setIsMarkingAsExternal(true);
+        
+        try {
+            const res = await postDataToAPI("mark-jobs-as-open/", { ids: [jobData.job.id] });
+            
+            if (res) {
+                toast.success("Job marked as external successfully");
+                // Refresh job details
+                await fetchJobDetails();
+            }
+        } catch (error) {
+            console.error('Error marking job as external:', error);
+            toast.error("Failed to mark job as external");
+        } finally {
+            setIsMarkingAsExternal(false);
         }
     }
 
@@ -65,6 +88,26 @@ export default function JobSuperAdminDetails() {
     return (
         <Pagelayout title="Job Details">
             <div className="space-y-6">
+                {/* Mark as External Button - Show only for internal jobs */}
+                {job.job_type === 'internal' && (
+                    <div className="flex justify-end">
+                        <Button
+                            onClick={handleMarkAsExternal}
+                            disabled={isMarkingAsExternal}
+                            className="flex items-center space-x-2"
+                        >
+                            {isMarkingAsExternal ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Check className="h-4 w-4" />
+                            )}
+                            <span>
+                                {isMarkingAsExternal ? "Processing..." : "Mark this job as external"}
+                            </span>
+                        </Button>
+                    </div>
+                )}
+
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card>

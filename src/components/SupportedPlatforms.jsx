@@ -28,6 +28,7 @@ export default function SupportedPlatforms() {
                             width={20}
                             height={20}
                             className="w-6 h-6 object-contain"
+                            priority
                         />
                         <span className="text-white text-lg font-medium">{platform.name}</span>
                     </div>

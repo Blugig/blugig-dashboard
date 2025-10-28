@@ -102,7 +102,8 @@ export default function AllJobs() {
                                     <SelectLabel>Job Type</SelectLabel>
                                     <SelectItem value="all">All Types</SelectItem>
                                     <SelectItem value="internal">Internal</SelectItem>
-                                    <SelectItem value="external">External</SelectItem>
+                                    <SelectItem value="open">External</SelectItem>
+                                    <SelectItem value="awarded">Awarded</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
