@@ -42,6 +42,8 @@ export default function JobFreelancerDetails({ params }) {
                 jobId: parseInt(id),
             }, false, true);
 
+            console.log(res);
+
             if (res) {
                 setData(res);
                 setDetails(res.details || {});
@@ -111,13 +113,30 @@ export default function JobFreelancerDetails({ params }) {
         );
     }
 
-    const getStatusBadge = (jobType) => {
-        if (jobType === 'open') {
+    const getStatusBadge = (status) => {
+        // Job type statuses
+        if (status === 'open') {
             return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Open</Badge>;
-        } else if (jobType === 'awarded') {
+        } else if (status === 'awarded') {
             return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Awarded</Badge>;
+        } else if (status === 'internal') {
+            return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Internal</Badge>;
         }
-        return <Badge variant="outline">{jobType}</Badge>;
+        
+        // Form submission statuses
+        else if (status === 'submitted') {
+            return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Submitted</Badge>;
+        } else if (status === 'offer_pending') {
+            return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Offer Pending</Badge>;
+        } else if (status === 'inprogress') {
+            return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">In Progress</Badge>;
+        } else if (status === 'completed') {
+            return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">Completed</Badge>;
+        } else if (status === 'cancelled') {
+            return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Cancelled</Badge>;
+        }
+        
+        return <Badge variant="outline">{status}</Badge>;
     };
 
     return (
@@ -136,7 +155,10 @@ export default function JobFreelancerDetails({ params }) {
                             </CardDescription>
                         </div>
                         <div className="flex flex-col gap-2 items-end">
-                            {getStatusBadge(data?.job?.job_type)}
+                            <div className="flex gap-2">
+                                {getStatusBadge(data?.job?.job_type)}
+                                {getStatusBadge(data?.status)}
+                            </div>
                             {data?.job?.created_at && (
                                 <span className="text-xs text-gray-500 flex items-center gap-1">
                                     <Calendar className="h-3 w-3" />
@@ -198,35 +220,40 @@ export default function JobFreelancerDetails({ params }) {
                     })}
                 </CardContent>
 
-                {/* Action Buttons */}
-                <CardFooter className="flex justify-start gap-3 pt-6 border-t">
-                    {!conversationId && is_freelancer ? (
-                        <Button onClick={startConversation} disabled={isLoading} className="gap-2">
-                            <MessageCircle className="h-4 w-4" />
-                            {isLoading ? "Starting..." : "Start Conversation"}
-                        </Button>
-                    ) : (
-                        <Button onClick={() => setIsChatOpen(true)} className="gap-2">
-                            <MessageCircle className="h-4 w-4" />
-                            Open Chat
-                        </Button>
-                    )}
-                </CardFooter>
-            </Card>
+                {data?.status === 'cancelled' ? null : (
+                    <>
+                        {/* Action Buttons */}
+                        <CardFooter className="flex justify-start gap-3 pt-6 border-t">
+                            {!conversationId && is_freelancer ? (
+                                <Button onClick={startConversation} disabled={isLoading} className="gap-2">
+                                    <MessageCircle className="h-4 w-4" />
+                                    {isLoading ? "Starting..." : "Start Conversation"}
+                                </Button>
+                            ) : (
+                                <Button onClick={() => setIsChatOpen(true)} className="gap-2">
+                                    <MessageCircle className="h-4 w-4" />
+                                    Open Chat
+                                </Button>
+                            )}
+                        </CardFooter>
+                    </>
 
-            <ChatSidebar
-                isOpen={isChatOpen}
-                onClose={() => setIsChatOpen(false)}
-                uid={data?.client?.id}
-                conversationId={conversationId}
-                messages={messages}
-                setMessages={setMessages}
-                session={data.session}
-                userName={data?.client?.name}
-                jobId={data?.job?.id}
-            />
+                )}
+                </Card>
 
-            {/* Show to awarded freelancer only */}
+                <ChatSidebar
+                    isOpen={isChatOpen}
+                    onClose={() => setIsChatOpen(false)}
+                    uid={data?.client?.id}
+                    conversationId={conversationId}
+                    messages={messages}
+                    setMessages={setMessages}
+                    session={data.session}
+                    userName={data?.client?.name}
+                    jobId={data?.job?.id}
+                />
+
+                {/* Show to awarded freelancer only */}
             {data?.job?.job_type === 'awarded' && data?.job?.awarded_freelancer?.id === profile?.id && (
                 <UpdateJobProgress
                     currentProgress={data?.job?.progress}

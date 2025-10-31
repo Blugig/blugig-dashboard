@@ -3,6 +3,7 @@
 import Info from "@/components/custom/Info";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import {
     Card,
     CardContent,
@@ -87,6 +88,23 @@ export default function FormDetails({ params }) {
         }
     }
 
+    const getStatusBadge = (status) => {
+        // Form submission statuses
+        if (status === 'submitted') {
+            return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Submitted</Badge>;
+        } else if (status === 'offer_pending') {
+            return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Offer Pending</Badge>;
+        } else if (status === 'inprogress') {
+            return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">In Progress</Badge>;
+        } else if (status === 'completed') {
+            return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">Completed</Badge>;
+        } else if (status === 'cancelled') {
+            return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Cancelled</Badge>;
+        }
+
+        return <Badge variant="outline">{status}</Badge>;
+    };
+
     useEffect(() => {
         fetchData()
     }, [])
@@ -94,19 +112,30 @@ export default function FormDetails({ params }) {
     return (
         <Pagelayout title={"Form Details"}>
             {/* Job Progress Display & Update - Combined */}
-
-            {!is_super_admin && data?.job?.awarded_to_user_type === 'admin' && data?.job?.awarded_admin?.id === profile?.id && (
+            {(!is_super_admin &&
+                data?.job?.awarded_to_user_type === 'admin' &&
+                data?.job?.awarded_admin?.id === profile?.id &&
+                data?.status !== 'cancelled') ? (
                 <UpdateJobProgress
                     currentProgress={data?.job?.progress || 0}
                     onProgressUpdate={handleProgressUpdate}
                 />
-            )}
+            ) : null}
 
             {/* Form Details */}
             <Card className="mb-4">
                 <CardHeader>
-                    <CardTitle className="flex flex-wrap">{getPermName(formType)} #{data?.details?.form_submission_id}</CardTitle>
-                    <CardDescription>Forms details which the user filled and converstaion</CardDescription>
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <CardTitle className="flex flex-wrap">{getPermName(formType)} #{data?.details?.form_submission_id}</CardTitle>
+                            <CardDescription>Forms details which the user filled and converstaion</CardDescription>
+                        </div>
+                        {data?.status && (
+                            <div>
+                                {getStatusBadge(data.status)}
+                            </div>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     <Link href={'/dashboard/users/' + data?.user?.id} className="block text-blue-400">
@@ -130,20 +159,24 @@ export default function FormDetails({ params }) {
                         );
                     })}
                 </CardContent>
-                {!conversationId && !is_super_admin && (
-                    <CardFooter className="flex justify-center sm:justify-start">
-                        <Button onClick={startConversation} disabled={isLoading}>
-                            {isLoading ? "Starting..." : "Start a Conversation"}
-                        </Button>
-                    </CardFooter>
-                )}
-                {conversationId && (
-                    <CardFooter className="flex justify-center sm:justify-start">
-                        <Button onClick={() => setIsChatOpen(true)} className="gap-2">
-                            <MessageCircle className="h-4 w-4" />
-                            Open Chat
-                        </Button>
-                    </CardFooter>
+                {!is_super_admin || data?.status === 'cancelled' ? (null) : (
+                    <>
+                        {!conversationId ? (
+                            <CardFooter className="flex justify-center sm:justify-start">
+                                <Button onClick={startConversation} disabled={isLoading}>
+                                    {isLoading ? "Starting..." : "Start a Conversation"}
+                                </Button>
+                            </CardFooter>
+                        ) : (
+                            <CardFooter className="flex justify-center sm:justify-start">
+                                <Button onClick={() => setIsChatOpen(true)} className="gap-2">
+                                    <MessageCircle className="h-4 w-4" />
+                                    Open Chat
+                                </Button>
+                            </CardFooter>
+
+                        )}
+                    </>
                 )}
             </Card>
 
