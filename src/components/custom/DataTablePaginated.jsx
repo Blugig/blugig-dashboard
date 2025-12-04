@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
     flexRender,
     getCoreRowModel,
@@ -34,6 +34,25 @@ import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
+const RenderTableRow = ({ row }) => {
+    return (
+        <TableRow
+            key={row.id}
+            data-state={row.getIsSelected() && "selected"}
+        >
+            {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                    {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                    )}
+                </TableCell>
+            ))}
+        </TableRow>
+    );
+};
+
+
 function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = null, multiSelectAction = null, isFreelancer = false }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,11 +62,10 @@ function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = 
     const [nextPage, setNextPage] = useState(null);
     const [previousPage, setPreviousPage] = useState(null);
 
-    const [columnFilters, setColumnFilters] = React.useState([])
-    const [rowSelection, setRowSelection] = React.useState({})
+    const [columnFilters, setColumnFilters] = useState([])
+    const [rowSelection, setRowSelection] = useState({})
 
-    async function fetchTableData(dataUrl, page = 1) {
-        // Filter out undefined values from filters object
+    const fetchTableData = useCallback(async (currentPage) => {
         const queryParams = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
             if (value !== undefined) {
@@ -55,18 +73,16 @@ function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = 
             }
         });
 
-        // Add pagination parameter
-        queryParams.append('page', page);
+        queryParams.append('page', currentPage);
 
         const res = await fetchFromAPI(`${dataUrl}/?${queryParams.toString()}`, isFreelancer);
         return res;
-    }
+    }, [dataUrl, filters, isFreelancer]);
 
     useEffect(() => {
         const getData = async () => {
             setLoading(true);
-            const res = await fetchTableData(dataUrl, page, filters);
-
+            const res = await fetchTableData(page);
             setData(res?.results || []);
             setTotalCount(res?.count || 0);
             setNextPage(res?.next);
@@ -75,35 +91,35 @@ function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = 
         };
 
         getData();
-    }, [page, filters]);
+    }, [page, fetchTableData]);
 
-    const handleExport = async () => {
+    const handleExport = useCallback(async () => {
         if (!filters.export_as) return;
-
         await exportData(data, filters.export_as, "exported_data");
-    };
+    }, [filters.export_as, data]);
 
     useEffect(() => {
         if (filters.export_as) {
             handleExport();
-            setExportFormat(null);
+            if (setExportFormat) {
+                setExportFormat(null);
+            }
         }
-    }, [filters.export_as]);
+    }, [filters.export_as, handleExport, setExportFormat]);
 
-    const handlePreviousPage = () => {
+    const handlePreviousPage = useCallback(() => {
         if (previousPage) {
             setPage((prev) => Math.max(prev - 1, 1));
         }
-    };
+    }, [previousPage]);
 
-    const handleNextPage = () => {
+    const handleNextPage = useCallback(() => {
         if (nextPage) {
             setPage((prev) => prev + 1);
         }
-    };
+    }, [nextPage]);
 
-    // Create columns with checkbox selection
-    const columnsWithSelection = React.useMemo(() => [
+    const columnsWithSelection = useMemo(() => [
         {
             id: "select",
             header: ({ table }) => (
@@ -144,32 +160,37 @@ function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = 
             columnFilters,
             rowSelection,
         },
-        // onColumnFiltersChange: (updater) => {
-        //     const newFilters = updater instanceof Function ? updater(table.getState().columnFilters) : updater;
-        //     table.setColumnFilters(newFilters);
-        // }
     });
+
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const filteredRowsLength = table.getFilteredRowModel().rows.length;
+
+    const renderMultiSelectAction = useMemo(() => {
+        if (selectedRows.length > 0 && multiSelectAction) {
+            return (
+                <div className="flex items-center space-x-2">
+                    {React.cloneElement(multiSelectAction, {
+                        selectedRows: selectedRows,
+                        clearSelection: () => setRowSelection({}),
+                    })}
+                    <span className="text-sm text-muted-foreground">
+                        •{"  "}
+                        {selectedRows.length} of{" "}
+                        {filteredRowsLength} row(s) selected.
+                    </span>
+                </div>
+            );
+        }
+        return null;
+    }, [selectedRows, multiSelectAction, filteredRowsLength]);
 
     return (
         <div className="w-full">
             <div className="flex items-center py-4">
-                {/* Multi-select actions */}
                 <div className="flex items-center space-x-2">
-                    {table.getFilteredSelectedRowModel().rows.length > 0 && multiSelectAction && (
-                        <div className="flex items-center space-x-2">
-                            {React.cloneElement(multiSelectAction, {
-                                selectedRows: table.getFilteredSelectedRowModel().rows,
-                                clearSelection: () => setRowSelection({}),
-                            })}
-                            <span className="text-sm text-muted-foreground">
-                                •{"  "}
-                                {table.getFilteredSelectedRowModel().rows.length} of{" "}
-                                {table.getFilteredRowModel().rows.length} row(s) selected.
-                            </span>
-                        </div>
-                    )}
+                    {renderMultiSelectAction}
                 </div>
-                
+
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">
@@ -230,19 +251,7 @@ function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = 
                             <>
                                 {table.getRowModel().rows?.length > 0 ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow
-                                            key={row.id}
-                                            data-state={row.getIsSelected() && "selected"}
-                                        >
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
-                                                    {flexRender(
-                                                        cell.column.columnDef.cell,
-                                                        cell.getContext()
-                                                    )}
-                                                </TableCell>
-                                            ))}
-                                        </TableRow>
+                                        <RenderTableRow key={row.id} row={row} />
                                     ))
                                 ) : (
                                     <TableRow>
@@ -293,4 +302,4 @@ function DataTablePaginated({ columns, dataUrl, filters = {}, setExportFormat = 
     );
 }
 
-export default DataTablePaginated;
+export default React.memo(DataTablePaginated);

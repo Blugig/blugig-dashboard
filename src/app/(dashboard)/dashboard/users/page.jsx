@@ -15,11 +15,34 @@ import Pagelayout from "@/components/layout/PageLayout"
 import { UserDetailsColumns } from "@/lib/tableCols"
 import DataTablePaginated from "@/components/custom/DataTablePaginated"
 
+const RenderInputSearch = React.memo(({ inputValue, setInputValue }) => {
+    return (
+        <div className="w-full md:w-auto md:max-w-sm">
+            <Input
+                type="text"
+                placeholder="Search by User ID"
+                className="w-full"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+            />
+        </div>
+    )
+})
+
 export default function Users() {
 
     const [statusFilter, setStatusFilter] = React.useState("All");
     const [exportFormat, setExportFormat] = React.useState(null); // xlsx or csv
     const [userIdSearch, setUserIdSearch] = React.useState("");
+    const [inputValue, setInputValue] = React.useState("");
+
+    React.useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            setUserIdSearch(inputValue);
+        }, 1000);
+
+        return () => clearTimeout(debounceTimer);
+    }, [inputValue]);
 
     const filters = {
         user_type: statusFilter !== "All" ? statusFilter : undefined,
@@ -58,20 +81,13 @@ export default function Users() {
                     </Select>
                 </div>
 
-                <div className="w-full md:w-auto md:max-w-sm">
-                    <Input 
-                        type="text" 
-                        placeholder="Search by User ID" 
-                        className="w-full"
-                        onChange={(e) => setUserIdSearch(e.target.value)} 
-                    />
-                </div>
+                <RenderInputSearch inputValue={inputValue} setInputValue={setInputValue} />
             </div>
 
-            <DataTablePaginated 
-                columns={UserDetailsColumns} 
-                dataUrl={"get-users"} 
-                filters={filters} 
+            <DataTablePaginated
+                columns={UserDetailsColumns}
+                dataUrl={"get-users"}
+                filters={filters}
                 setExportFormat={setExportFormat}
             />
         </Pagelayout>

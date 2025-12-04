@@ -46,11 +46,11 @@ const formSchema = z.object({
     timeline: z.string({
         required_error: "Please select a timeline.",
     }),
-    estimated_hours: z.string().optional(),
+    estimated_hours: z.string(),
     total_cost: z.number().min(1, {
         message: "Total cost must be at least 1.",
     }),
-    deliverables: z.string().optional(),
+    deliverables: z.string(),
 })
 
 export function CreateOffer({ uid, sendOfferMessage, jobId }) {
@@ -68,6 +68,17 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
             deliverables:  "",
         },
     })
+
+    const watchedFields = form.watch();
+    
+    const isFormValid = 
+        watchedFields.name?.trim() !== "" &&
+        watchedFields.description?.trim() !== "" &&
+        watchedFields.timeline !== "" &&
+        watchedFields.type !== "" &&
+        watchedFields.estimated_hours?.trim() !== "" &&
+        watchedFields.total_cost > 0 &&
+        watchedFields.deliverables?.trim() !== "";
 
     async function onSubmit(values) {
         const endpoint = "/create-offer";
@@ -120,7 +131,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Name</FormLabel>
+                                            <FormLabel>Name <span className="text-red-500">*</span></FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Offer name" {...field} />
                                             </FormControl>
@@ -133,7 +144,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                     name="type"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Offer Type</FormLabel>
+                                            <FormLabel>Offer Type <span className="text-red-500">*</span></FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -154,7 +165,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                     name="timeline"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Timeline</FormLabel>
+                                            <FormLabel>Timeline <span className="text-red-500">*</span></FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -177,7 +188,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                     name="estimated_hours"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Estimated Hours</FormLabel>
+                                            <FormLabel>Estimated Hours <span className="text-red-500">*</span></FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="text"
@@ -194,7 +205,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                     name="total_cost"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Total Cost</FormLabel>
+                                            <FormLabel>Total Cost <span className="text-red-500">*</span></FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -216,7 +227,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                     name="description"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Description</FormLabel>
+                                            <FormLabel>Description <span className="text-red-500">*</span></FormLabel>
                                             <FormControl>
                                                 <Textarea 
                                                     placeholder="Offer description" 
@@ -233,7 +244,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                                     name="deliverables"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Deliverables</FormLabel>
+                                            <FormLabel>Deliverables <span className="text-red-500">*</span></FormLabel>
                                             <FormControl>
                                                 <Textarea
                                                     placeholder="Enter deliverables, separated by commas"
@@ -248,7 +259,7 @@ export function CreateOffer({ uid, sendOfferMessage, jobId }) {
                             </div>
                             
                             <DialogFooter className="flex-shrink-0 sticky bottom-0 bg-white pt-4 border-t">
-                                <Button type="submit" className="w-full md:w-auto">
+                                <Button type="submit" className="w-full md:w-auto" disabled={!isFormValid}>
                                     Create Offer
                                 </Button>
                             </DialogFooter>

@@ -11,13 +11,70 @@ import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { postDataToAPI } from "@/lib/api";
 
+const RenderInputSearch = React.memo(({ inputValue, setInputValue }) => {
+    return (
+        <div className="w-full md:w-auto md:max-w-sm">
+            <Input
+                type="text"
+                placeholder="Search by User ID"
+                className="w-full"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+            />
+        </div>
+    )
+});
+
 export default function AllFreelancers() {
     const [exportFormat, setExportFormat] = React.useState(null); // xlsx or csv
     const [userIdSearch, setUserIdSearch] = React.useState("");
     const [isActive, setIsActive] = React.useState("all"); // "" for all, "true", "false"
     const [isApproved, setIsApproved] = React.useState("all"); // "" for all, "true", "false"
 
+    const [inputValue, setInputValue] = React.useState("");
+
     const [isProcessing, setIsProcessing] = React.useState(false);
+
+    React.useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            setUserIdSearch(inputValue);
+        }, 700);
+
+        return () => clearTimeout(debounceTimer);
+    }, [inputValue]);
+
+    const RenderFilters = React.memo(({ setIsActive, setIsApproved, isActive, isApproved }) => {
+        return (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
+                <Select onValueChange={setIsActive} value={isActive}>
+                    <SelectTrigger className="w-full sm:w-[140px]">
+                        <SelectValue placeholder="Is Active" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Is Active</SelectLabel>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="true">True</SelectItem>
+                            <SelectItem value="false">False</SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+                <Select onValueChange={setIsApproved} value={isApproved}>
+                    <SelectTrigger className="w-full sm:w-[140px]">
+                        <SelectValue placeholder="Is Approved" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Is Approved</SelectLabel>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="true">True</SelectItem>
+                            <SelectItem value="false">False</SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+        )
+    });
 
     const handleBulkAction = async (selectedRows, clearSelection) => {
         if (selectedRows.length === 0) {
@@ -28,10 +85,10 @@ export default function AllFreelancers() {
         setIsProcessing(true);
         // Extract IDs from selected rows
         const selectedIds = selectedRows.map(row => row.original.id);
-        
+
         try {
             const res = await postDataToAPI('onboard-freelancers/', { ids: selectedIds });
-    
+
             if (res) {
                 toast.success(`Successfully processed ${selectedIds.length} items`);
                 clearSelection();
@@ -73,55 +130,8 @@ export default function AllFreelancers() {
                 <label className="text-lg font-semibold">Freelancer Filters</label>
             </div>
             <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 mb-8">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
-                    {/* <Select onValueChange={(e) => setExportFormat(e)}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Export Data To" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Select Export Format</SelectLabel>
-                                <SelectItem value="xlsx">XLSX</SelectItem>
-                                <SelectItem value="csv">CSV</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select> */}
-                    <Select onValueChange={setIsActive} value={isActive}>
-                        <SelectTrigger className="w-full sm:w-[140px]">
-                            <SelectValue placeholder="Is Active" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Is Active</SelectLabel>
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="true">True</SelectItem>
-                                <SelectItem value="false">False</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <Select onValueChange={setIsApproved} value={isApproved}>
-                        <SelectTrigger className="w-full sm:w-[140px]">
-                            <SelectValue placeholder="Is Approved" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Is Approved</SelectLabel>
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="true">True</SelectItem>
-                                <SelectItem value="false">False</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="w-full md:w-auto md:max-w-sm">
-                    <Input
-                        type="text"
-                        placeholder="Search by User ID"
-                        className="w-full"
-                        onChange={(e) => setUserIdSearch(e.target.value)}
-                    />
-                </div>
+                <RenderFilters setIsActive={setIsActive} setIsApproved={setIsApproved} isActive={isActive} isApproved={isApproved} />
+                <RenderInputSearch inputValue={inputValue} setInputValue={setInputValue} />
             </div>
 
             <DataTablePaginated

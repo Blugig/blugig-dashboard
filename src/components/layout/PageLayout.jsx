@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import Header from "./Header";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/lib/sidebar";
 
-export default function Pagelayout({ 
+function Pagelayout({ 
     title, 
     showDetailsTab=false,
     tabContents={},
@@ -59,3 +59,5 @@ export default function Pagelayout({
         </>
     )
 }
+
+export default React.memo(Pagelayout);

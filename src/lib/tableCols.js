@@ -3,25 +3,113 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { cn, formatDate } from "./utils"
+import clsx from "clsx"
 
+export const statusColors = {
+  submitted: "bg-blue-500 text-white",
+  offer_pending: "bg-yellow-500 text-black",
+  inprogress: "bg-purple-500 text-white",
+  completed: "bg-green-600 text-white",
+  cancelled: "bg-red-600 text-white",
+};
 
-const renderAttachment = ({ row }) => {
-    const attachment = row.getValue("attachment");
-    const attachmentType = row.original?.attachmentType;
-    console.log(attachmentType, row);
+export function renderStatus(status) {
+  if (!status) return null;
 
-    if (!attachment) return <div>-</div>;
-
-    return (
-        <Link href={attachment} target="_blank" className="text-blue-500">
-            {attachmentType?.startsWith('image/') ? (
-                <img src={attachment} width={200} height={200} alt="Attachment" />
-            ) : (
-                <span className="text-blue-500">View</span>
-            )}
-        </Link>
-    )
+  return (
+    <Badge className={clsx(statusColors[status])}>
+      {status.replace("_", " ")}
+    </Badge>
+  );
 }
+
+export const WithdrawalEarningsColumns = [
+    {
+        accessorKey: "id",
+        header: "Withdrawal ID",
+        cell: ({ row }) => <div className="text-blue-500">{row.getValue("id")}</div>,
+    },
+    {
+        accessorKey: "amount",
+        header: "Amount",
+        cell: ({ row }) => <div className="font-medium">${row.getValue("amount")}</div>,
+    },
+    {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+            const status = row.getValue("status");
+            return (
+                <Badge 
+                    className={cn(
+                        status === 'completed' && 'bg-green-600',
+                        status === 'processing' && 'bg-blue-600',
+                        status === 'requested' && 'bg-yellow-600',
+                        status === 'failed' && 'bg-red-600'
+                    )}
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Badge>
+            );
+        },
+    },
+    {
+        accessorKey: "user",
+        header: "Freelancer",
+        cell: ({ row }) => {
+            const freelancer = row.original?.user;
+            return (
+                <div>
+                    {freelancer ? (
+                        <Link 
+                            href={`/dashboard/freelancers/${freelancer.id}`} 
+                            className="text-blue-500 hover:underline"
+                        >
+                            {freelancer.name}
+                        </Link>
+                    ) : (
+                        <span className="text-muted-foreground">-</span>
+                    )}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "created_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Created At
+                    <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => <div>{formatDate(row.getValue("created_at"))}</div>,
+    },
+    {
+        accessorKey: "updated_at",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Updated At
+                    <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => <div>{formatDate(row.getValue("updated_at"))}</div>,
+    },
+    {
+        id: "action",
+        header: "Action",
+        cell: () => <div className="text-muted-foreground">-</div>,
+    },
+];
 
 export const JobParticipantsColumns = [
     {
@@ -284,6 +372,11 @@ export const SolutionImplementationColumns = [
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "current_tools", header: "Current Tools" },
     {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
+    {
         id: "action",
         header: "Action",
         cell: ({ row }) => (
@@ -308,6 +401,11 @@ export const PremiumAppSupportColumns = [
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "primary_contact_email", header: "Contact Email" },
     {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
+    {
         id: "action",
         header: "Action",
         cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-PRM`} className="text-blue-500">View</Link>,
@@ -330,6 +428,11 @@ export const ApiIntegrationColumns = [
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "description", header: "Description" },
     {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
+    {
         id: "action",
         header: "Action",
         cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-API`} className="text-blue-500">View</Link>,
@@ -350,6 +453,11 @@ export const HireSmartsheetExpertColumns = [
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "start_date", header: "Start Date" },
     { accessorKey: "contract_duration", header: "Duration" },
+    {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
     {
         id: "action",
         header: "Action",
@@ -373,6 +481,11 @@ export const SystemAdminSupportColumns = [
     { accessorKey: "urgency_level", header: "Urgency Level" },
     { accessorKey: "budget", header: "Budget" },
     {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
+    {
         id: "action",
         header: "Action",
         cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-ADM`} className="text-blue-500">View</Link>,
@@ -391,6 +504,11 @@ export const AdhocRequestColumns = [
     { accessorKey: "budget", header: "Budget" },
     { accessorKey: "expected_timeline", header: "Expected Timeline" },
     {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
+    {
         id: "action",
         header: "Action",
         cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-ADH`} className="text-blue-500">View</Link>,
@@ -408,6 +526,11 @@ export const BookOneOnOneColumns = [
     { accessorKey: "consultation_focus", header: "Consultation Focus" },
     { accessorKey: "smartsheet_experience", header: "Smartsheet Experience" },
     { accessorKey: "team_size", header: "Team Size" },
+    {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
     {
         id: "action",
         header: "Action",
@@ -431,6 +554,11 @@ export const PmoControlCenterColumns = [
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "primary_contact_email", header: "Contact Email" },
     {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
+    {
         id: "action",
         header: "Action",
         cell: ({ row }) => <Link href={`/forms/details/${row.original.form_submission_id}-PMO`} className="text-blue-500">View</Link>,
@@ -453,6 +581,11 @@ export const LicenseRequestColumns = [
     { accessorKey: "job_title", header: "Job Title" },
     { accessorKey: "timeline", header: "Timeline" },
     { accessorKey: "project_needs", header: "Project Needs" },
+    {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => renderStatus(row.original.status),
+    },
     {
         id: "action",
         header: "Action",

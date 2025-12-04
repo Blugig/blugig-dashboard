@@ -51,36 +51,38 @@ export default function UpdateJobProgress({ currentProgress = 0, onProgressUpdat
                         {currentProgress < 30 ? 'Just started' :
                             currentProgress < 60 ? 'In progress' :
                                 currentProgress < 90 ? 'Nearly complete' :
-                                    'Almost finished'}
+                                    currentProgress === 100 ? 'Finished' : 'Almost finished'}
                     </p>
                 </div>
             </Card>
 
-            <Card className="p-4">
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Update Progress</span>
-                        <span className="text-sm font-medium text-blue-600">{progress[0]}%</span>
+            {currentProgress < 100 && (
+                <Card className="p-4">
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Update Progress</span>
+                            <span className="text-sm font-medium text-blue-600">{progress[0]}%</span>
+                        </div>
+
+                        <Slider
+                            value={progress}
+                            onValueChange={handleProgressChange}
+                            max={100}
+                            step={5}
+                            className="w-full"
+                        />
+
+                        <Button
+                            onClick={handleUpdateProgress}
+                            disabled={isUpdating}
+                            size="sm"
+                            className="w-full"
+                        >
+                            {isUpdating ? "Updating..." : "Update"}
+                        </Button>
                     </div>
-
-                    <Slider
-                        value={progress}
-                        onValueChange={handleProgressChange}
-                        max={100}
-                        step={5}
-                        className="w-full"
-                    />
-
-                    <Button
-                        onClick={handleUpdateProgress}
-                        disabled={isUpdating}
-                        size="sm"
-                        className="w-full"
-                    >
-                        {isUpdating ? "Updating..." : "Update"}
-                    </Button>
-                </div>
-            </Card>
+                </Card>
+            )}
         </div>
     );
 }
